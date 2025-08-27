@@ -2,7 +2,10 @@
 *npm create vite@latest --template Client, chooise React, Javascript + SWC
 *npm install
 *npm istall react-router
-
+*npm install tailwindcss @tailwindcss/vite
+    --uppdaterade vite.config--import tailwindcss from "@tailwindcss/vite"; och lade till -tailwindcss() under plugins.
+    --uppdaterade app.css --@import "tailwindcss";
+    --
 
 
 # React + Vite
