@@ -1,8 +1,8 @@
 
 # npm create vite@latest --template Client, chooise React, Javascript + SWC
 # npm install
-# 
-
+# npm install lucide-react //icon library
+#npm install tailwind-scrollbar-hide //to hide slides
 
 #Ignorerar node-modiles
 Client/node_modules/

@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react';
-import { useNavigate} from 'react-router';
-
+import { useNavigate } from "react-router";
+import { useState, useEffect } from "react";
 import tunna from '../../assets/Img/delete-icon.png';
 
-function BasketPage(){
+function CheckoutPage(){
     const navigate = useNavigate();
     const [isLargeScreen, setIsLargeScreen]=useState(window.innerWidth >= 640);
     const [cartItems, setcartItems] = useState([]);
@@ -37,19 +36,20 @@ const handleQtyChange =(id, qty)=>{
     );
 };
 
-    const toCheckout = ()=>{
-        navigate("/checkout", {state: { cart: cartItems} });
+    const toBuy = ()=>{
+        navigate("/order/confirmation");
     };
 
 
             return(
                 <section className='mt-20'>
-                    <h2 className='text-center text-2xl mb-10'>Varukorgen</h2>
+                    <h2 className='text-center text-2xl mb-10'>Kassan</h2>
                 {!isLargeScreen ? (
                     <div>
                     {cartItems.map((Item) => (
-                    <div className="w-full p-5 border
-                    key={item.id}">
+                    <div 
+                    className="w-full p-5 border"
+                    key={Item.id}>
             
                         <div className="flex flex-wrap py-2">
                             <div className="flex-1 text-xl pb-3">{Item.name}</div>
@@ -60,7 +60,6 @@ const handleQtyChange =(id, qty)=>{
                                     value={Item.qty}
                                     onChange={(e)=> handleQtyChange(Item.id, e.target.value)}
                                     className='bg-gray-300 rounded text-xl'>
-                                    <optgroup>
                                         <option value="1">1</option>
                                         <option value="2">2</option>
                                         <option value="3">3</option>
@@ -71,7 +70,6 @@ const handleQtyChange =(id, qty)=>{
                                         <option value="8">8</option>
                                         <option value="9">9</option>
                                         <option value="10">10</option>
-                                    </optgroup>
                                 </select>
                             <button className='pl-4 text-end'>
                                 <img src={tunna} alt="Radera" className='w-6 h-6' />
@@ -127,13 +125,127 @@ const handleQtyChange =(id, qty)=>{
                 </tbody>
             </table>
             )}
+
+    {/* Kund uppgifter */}    
+            <section className="mt-20 p-2">
+                <h3 className="text-center text-2xl mb-10">Kunduppgifter</h3>
+                <form method="post"
+                className="sm:flex flex-wrap gap-2">
+                {/* Förnamn */}
+                    <div className="
+                        flex flex-col 
+                        sm:w-[49%]
+                        lg:max-w-[400px]">
+                            <label 
+                                htmlFor="firstName"
+                                className="text-xl mb-4"
+                                >Förnamn</label>
+                            <input
+                                id="firstName" 
+                                type="text" 
+                                className="border text-lg p-2"
+                                placeholder="Förnamn"
+                            />
+                    </div>
+                {/* Efternamn */}
+                    <div className="
+                        flex flex-col
+                        sm:w-[49%]
+                        lg: max-w-[400px]
+                        ">
+                        <label 
+                            htmlFor="lastName"
+                            className="text-xl my-4 sm:my-0 sm:mb-4"
+                            >Efternamn</label>
+                        <input 
+                            id="lastName"
+                            type="text" 
+                            className="border text-lg p-2"
+                            placeholder="Efternamn"
+                        />
+                    </div>
+                {/* E-post */}
+                    <div className="
+                        flex flex-col
+                        sm:w-[49%]
+                        lg:w-full
+                        ">
+                        <label 
+                            htmlFor="email"
+                            className="text-xl my-4"
+                            >E-post</label>
+                        <input 
+                            id="email"
+                          type="text" 
+                            className="border text-lg p-2 lg:w-[500px]"
+                            placeholder="E-post"
+                        />
+                    </div>
+            {/* Adressfält */}
+                    <fieldset className="
+                        border mt-10 p-3
+                        w-full">
+                        <legend>Adress</legend>
+                {/* Gata */}
+                    <div className="flex flex-col">
+                        <label 
+                            htmlFor="street"
+                            className="text-xl mt-4"
+                            >Gata</label>
+                        <input 
+                            id="street"
+                            type="text" 
+                            className="border text-lg p-2"
+                            placeholder="Gata"
+                        />
+                    </div>
+                {/* Zip */}
+                    <div className="
+                        flex flex-col
+                        sm: max-w-[200px]">
+                        <label 
+                            htmlFor="zipcode"
+                            className="text-lg mt-4"
+                            >Postnummer</label>
+                        <input 
+                            id="zipcode"
+                            type="text" 
+                            className="border text-xl p-2"
+                            placeholder="Postnummer"
+                        />
+                    </div>
+                {/* City */}
+                    <div className="
+                        flex flex-col
+                        sm:max-w-[350px]">
+                        <label 
+                            htmlFor="city"
+                            className="text-xl mt-4"
+                            >Stad</label>
+                        <input 
+                            id="city"
+                            type="text" 
+                            className="border text-lg p-2"
+                            placeholder="Stad"
+                        />
+                    </div>
+                    </fieldset>
+                {/* check Newsletter */}
+                <div className="mt-4 pl-4">
+                    <label htmlFor="newsletter"></label>
+                    <input type="checkbox" /> Jag vill ta emot nyhetsbrev
+                </div>
+                        
+                </form>
+             </section>
+             
             <div className='mt-10 flex justify-center'>
                 <button 
-                    onClick={toCheckout}
-                    className='text-xl bg-blue-100 p-4 rounded-xl w-[300px]'>Till kassan
+                    onClick={toBuy}
+                    className='text-xl bg-blue-100 p-4 rounded-xl w-[300px]'>Köp
                 </button>
             </div>
             </section>
             );
-        }
-export default BasketPage;
+}
+export default CheckoutPage;

@@ -1,7 +1,7 @@
 
 function Spots(){
     return(
-        <article className=" flex flex-row gap-4 mt-20">
+        <article className=" flex flex-row gap-4 my-20">
                     {/*Box1 */}
                         <div className="
                             hidden
