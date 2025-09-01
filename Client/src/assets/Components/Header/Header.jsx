@@ -1,11 +1,15 @@
-import { NavLink } from "react-router";
+import { Link, NavLink, useNavigate } from "react-router";
+
 
 import logo from "../../Img/logo3.png";
 import cart from "../../Img/shopping-cart.svg";
 import heart from "../../Img/heart.svg";
-import loggin from "../../Img/loggin.svg";
+import login from "../../Img/loggin.svg";
 import searchglas from "../../Img/search.svg"
+
 function Header(){
+    
+    const navigate=useNavigate();
 
     const inputValueOfSearch = ()=>{
         inputValueOfSearch.console.log("value");
@@ -14,17 +18,20 @@ function Header(){
         valueOfInputOnSearch.console.log("valueinput");
     };
 
+     
     return(
         <section className="
             flex flex-col gap-4 mb-10 
             sm:flex-row sm:items-center sm:justify-between
             ">
         <div className="shrink-0">
-            <img 
-            src={logo} 
-            alt="Logotyp" 
-            className="h-44 object-contain" 
-            />
+            <Link to="/">
+                <img 
+                src={logo} 
+                alt="Logotyp" 
+                className="h-44 object-contain" 
+                />
+            </Link>
             <h1 className=" 
                 absolute left-[38%] top-15 text-4xl font[var(--font-mystery)] 
                 sm:hidden
@@ -57,20 +64,20 @@ function Header(){
         sm:shrink-0
         ">
             <NavLink
-                to="#">
+                to="/basket">
                     <img src={cart} alt="Varukorg" className="
                         w-7 h-7
                         "/>
             </NavLink>
             <NavLink
-            to="#">
+            to="/favorites">
                 <img src={heart} alt="Favoriter" className="
                     w-7 h-7
                     "/>
             </NavLink>
             <NavLink
-            to="#">
-                <img src={loggin} alt="Logga in" className="
+            to="/login">
+                <img src={login} alt="Logga in" className="
                 w-7 h-7
                 "/>
             </NavLink>

@@ -36,7 +36,7 @@ const toggleSection = (index) =>{
 
 
     return(
-        <section className=""> 
+        <section className="mt-20"> 
             <ul className="sm:flex flex-row">
                 {accordionItems.map((accordionItem, index) => (
                     <li 

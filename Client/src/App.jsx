@@ -13,11 +13,19 @@ import BasketPage from './Pages/ClientPages/BasketPage.jsx';
 import DetailsPage from './Pages/ClientPages/DetailsPage.jsx';
 import CategoriePage from './Pages/ClientPages/CategoriePage.jsx';
 
+import ConfirmationPage from './Pages/ClientPages/ConfirmationPage.jsx';
+import RegisterPage from './Pages/ClientPages/RegisterPage.jsx';
+import LoggInPage from './Pages/ClientPages/LoggInPage.jsx';
+
+
 //Pages Admin
 import AdminPage from './Pages/AdminPages/AdminPage.jsx';
 import AdminNewproduct from './Pages/AdminPages/NewProductsPage.jsx';
 import AdminCategoriPage from './Pages/AdminPages/CategoriPage.jsx';
 import AdminNewCategoriPage from './Pages/AdminPages/NewCategoriPage.jsx';
+import CheckoutPage from './Pages/ClientPages/CheckoutPage.jsx';
+
+
 
 function App() {
  
@@ -27,14 +35,21 @@ function App() {
     <Routes>
       <Route element={<ClientLayouts />}>
         <Route path='/' element={<HomePage />} />
+    //Ska vara dynamiska, ändra senare
+        <Route path='/products' element={<DetailsPage />} />
+    //Ska vara dynamiska, ändra senare
+        <Route path='/categories/:categoriName' element={<CategoriePage />} />
+    //Ska vara dynamiska, ändra senare
+        <Route path='/search' element={<SearchPage />} />
         <Route path='/favorites' element={<FavoritPage />} />
         <Route path='/news' element={<NewsPage />} />
-        <Route path='/basket' element={<BasketPage />} />
         
-        //Ska vara dynamiska, ändra senare
-        <Route path='/products' element={<DetailsPage />} />
-        <Route path='/categories' element={<CategoriePage />} />
-        <Route path='/search' element={<SearchPage />} />
+        <Route path='/basket' element={<BasketPage />} />
+        <Route path='/checkout' element={<CheckoutPage />} />
+        <Route path='/order/confirmation' element={<ConfirmationPage />} />
+        <Route path='/login' element={<LoggInPage />} />
+        <Route path='/register' element={<RegisterPage />} />
+  
       </Route>
       
       <Route element={<AdminLayouts/>}>
