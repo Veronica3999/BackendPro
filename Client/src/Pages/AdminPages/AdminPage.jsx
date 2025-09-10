@@ -1,9 +1,73 @@
 
 import { NavLink } from 'react-router';
 import tunna from '../../assets/Img/delete-icon.png';
+import { useState, useEffect } from 'react';
 
 
 function AdminPage(){
+
+const[products, setproducts] = useState([]);
+const[message, setmessage] = useState();
+const[textStatus, settextStatus] = useState();
+
+
+const productsFetch = async () =>{
+    try{
+        const res = await fetch("http://localhost:8000/api/products");
+        const data = await res.json();
+        setproducts(data);
+    }
+    catch(error){
+        setmessage("Kunde inte hämta produkterna");
+    }
+}; 
+
+useEffect(()=>{
+        if(message){
+            const timer = setTimeout(()=>{
+                setmessage("");
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+        },[message]);
+
+
+useEffect(()=>{
+        productsFetch();
+    },[]);
+
+
+const handleDelite = async(id)=>{
+    try{
+        const res = await fetch(`http://localhost:8000/api/products/delete/${id}`,{
+            method:"DELETE"
+        });
+        const resMsg = await res.json();
+            if(!res.ok){
+                setmessage(resMsg.error);
+                settextStatus("error");
+                return;
+            }
+            setproducts(products.filter(product=>product.id !== id))
+            setmessage(resMsg.message);
+            settextStatus("success");
+        }
+    catch(error){
+         console.log("Kunde inte radera kategorin", error);
+            settextStatus("error");
+    }
+
+console.log(id);
+};
+
+
+
+
+
+
+
+
+
 
    
 
@@ -26,16 +90,23 @@ function AdminPage(){
                     </tr>
                 </thead>
                 <tbody className='border'>
-                    <tr className='odd:bg-gray-100 even:bg-blue-50 hover:bg-indigo-200 transition-colors '>
-                        <td className=' border-r px-4 py-2 '>T-shirt</td>
-                        <td className='border-r px-4 py-2 '>AAA111</td>
-                        <td className='border-r px-4 py-2 '>199</td>
-                        <td>
-                            <button type="text" className='inline-flex p-2 rounded  hover:bg-gray-400'>
-                                <img src={tunna} alt="Radera" className='w-5 h-5' />
-                            </button>
-                        </td>
+                    {products.map(product =>(
+                    <tr 
+                        className='odd:bg-gray-100 even:bg-blue-50 hover:bg-indigo-200 transition-colors '
+                        key={product.id}>
+                            <td className=' border-r px-4 py-2 '>{product.productName}</td>
+                            <td className='border-r px-4 py-2 '>{product.sku}</td>
+                            <td className='border-r px-4 py-2 '>{product.price}</td>
+                            <td>
+                                <button 
+                                    type="submite" 
+                                    className='inline-flex p-2 rounded  hover:bg-gray-400'
+                                    onClick={()=>handleDelite(product.id)} >
+                                    <img src={tunna} alt="Radera" className='w-5 h-5' />
+                                </button>
+                            </td>
                     </tr>
+                    ))}
                 </tbody>
             </table>
         </main>

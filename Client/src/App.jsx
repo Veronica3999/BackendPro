@@ -1,5 +1,6 @@
 import { Routes, Route} from 'react-router';
 import './App.css';
+import { useState, useEffect } from 'react';
 
 //Layouts
 import AdminLayouts from './Layouts/AdminLayout/AdminLayouts.jsx';
@@ -27,14 +28,23 @@ import CheckoutPage from './Pages/ClientPages/CheckoutPage.jsx';
 
 
 
+
 function App() {
- 
+  const [products, setproducts]=useState([]);
+  useEffect(()=>{
+    fetch("http://localhost:8000/api/products")
+    .then(res=>res.json())
+    .then(products=>{
+      setproducts(products)
+    })
+    .catch(error=>console.error("Problem vid fetching av produkter i App:", error));
+  },[]);
 
   return ( 
     <>
     <Routes>
       <Route element={<ClientLayouts />}>
-        <Route path='/' element={<HomePage />} />
+        <Route path='/' element={<HomePage products={products}/>} />
     //Ska vara dynamiska, ändra senare
         <Route path='/products' element={<DetailsPage />} />
     //Ska vara dynamiska, ändra senare

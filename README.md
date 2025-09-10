@@ -4,3 +4,5 @@
 *SET DEBUG=server:* & npm start
 *npm install nodemon + dev:nodemon
 *npm install better-sqlite3
+*npm install cors
+*npm install multer
