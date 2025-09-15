@@ -1,0 +1,41 @@
+-- database: c:\Users\Veron\Desktop\BackendPro\server\db\freakyfashion.db
+
+CREATE TABLE Products(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    productName VARCHAR(25) NOT NULL,
+    description VARCHAR(300),
+    image TEXT,
+    brand VARCHAR(100),
+    sku VARCHAR(6),
+    price INTEGER,
+    categoryId INTEGER NOT NULL, --(FK)
+    publishDate TEXT,
+    categories,
+    created_at TEXT,
+    isNew BOOLEAN,
+    slug TEXT
+);
+
+INSERT INTO Products 
+(productName, description, image, brand, sku, price, categoryId, publishDate, created_at, isNew, slug)
+VALUES
+('Classic T-Shirt', 'En enkel klassisk t-shirt i bomull.', 'https://placehold.co/500x600', 'Plopp', 'AAA111', 199, 1, '2025-01-01', '2025-01-01', 1, 'classic-t-shirt'),
+('Sports Sneakers', 'Lätta och bekväma sneakers för träning.', 'https://placehold.co/500x600', 'Snickers', 'BBB222', 899, 2, '2025-02-15', '2025-02-10', 1, 'sports-sneakers'),
+('Leather Wallet', 'Exklusiv plånbok i äkta läder.', 'https://placehold.co/500x600', 'Levis', 'CCC333', 499, 3, '2025-03-01', '2025-02-25', 1, 'leather-wallet'),
+('Smartphone X100', 'Högpresterande smartphone med lång batteritid.', 'https://placehold.co/500x600', 'Marabou', 'DDD444', 6999, 4, '2025-04-10', '2025-04-01', 1, 'smartphone-x100'),
+('Coffee Maker', 'Brygg ditt kaffe snabbt och enkelt.', 'https://placehold.co/500x600', 'Monster', 'EEE555', 1299, 5, '2025-05-05', '2025-05-01', 1, 'coffee-maker'),
+('Gaming Chair', 'Ergonomisk stol för gaming och kontor.', 'https://placehold.co/500x600', 'Dell', 'FFF666', 2499, 6, '2025-06-12', '2025-06-10', 1, 'gaming-chair'),
+('Bluetooth Headphones', 'Trådlösa hörlurar med bra ljud.', 'https://placehold.co/500x600', 'Zara', 'GGG777', 1299, 2, '2025-07-01', '2025-06-28', 1, 'bluetooth-headphones'),
+('Winter Jacket', 'Varm och snygg jacka för vintern.', 'https://placehold.co/500x600', 'Puma', 'HHH888', 1999, 1, '2025-08-01', '2025-07-25', 1, 'winter-jacket'),
+('Desk Lamp', 'LED-lampa med justerbar ljusstyrka.', 'https://placehold.co/500x600', 'Cloetta', 'III999', 399, 5, '2025-09-01', '2025-08-28', 1, 'desk-lamp'),
+('Yoga Mat', 'Bekväm och halkfri yogamatta.', 'https://placehold.co/500x600', 'Nike', 'JJJ111', 299, 6, '2025-10-01', '2025-09-25', 0, 'yoga-mat');
+
+DROP TABLE Products;
+
+CREATE TABLE IF NOT EXISTS Categories(
+    categoryID INTEGER PRIMARY KEY AUTOINCREMENT,
+    categoryName TEXT,
+    categoryImage TEXT
+);
+
+DROP TABLE Categories;

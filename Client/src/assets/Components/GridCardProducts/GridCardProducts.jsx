@@ -1,12 +1,12 @@
 
 import { Link } from "react-router";
 
-function GridCardProducts({ name, price, brand, image}){
+function GridCardProducts({ id ,name, price, brand, image, slug}){
     return(
         <article className="my-10 sm:my-5">
                     <div className="">
                         <div className="relative p-6 lg:p-2">
-                            <Link to="">
+                            <Link to={`/products/${id}/${slug}`}>
                                 <img 
                                     src={image} 
                                     alt={name} 

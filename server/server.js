@@ -517,8 +517,13 @@ app.delete('/api/delete/categories/:id',(req,res)=>{
   }
 });
 
-
+app.get('/api/hero',(req,res)=>{
+  const heroInfo =db.prepare(`
+    SELECT * FROM Hero 
+    `).all();
+    res.json(heroInfo);
   
+});
 
 app.listen(port, ()=>{
 console.log(`API started on port: ${port}`)

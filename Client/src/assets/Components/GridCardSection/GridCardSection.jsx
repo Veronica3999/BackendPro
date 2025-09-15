@@ -12,10 +12,12 @@ function GridCardSection({title, products}){
             {products.map((product) => (
                 <GridCardProducts
                     key={product.id}
+                        id={product.id}
                         name={product.productName}
                         price={product.price}
                         brand={product.brand}
                         image={product.image}
+                        slug={product.slug}
                 />
             ))}
         </section>
