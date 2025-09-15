@@ -5,8 +5,10 @@ import Shipping from "../../assets/Components/Shipping/Shipping.jsx";
 import Footer from "../../assets/Components/Footer/Footer.jsx";
 
 
+
 function ClientLayouts(){
-    document.title = 'Freaky Fashion';
+ 
+    
 
     return(
         <div className="font-serif">

@@ -1,57 +1,35 @@
+import {useState, useEffect} from 'react';
+
+
 
 function Spots(){
+
+const[spots, setspots] = useState([]);
+
+useEffect(() =>{
+    fetch('http://localhost:8000/api/spots')
+        .then(res => res.json())
+        .then((spotsData)=>
+        setspots(spotsData))
+},[]);
+
+
     return(
         <article className=" flex flex-row gap-4 my-20">
-                    {/*Box1 */}
-                        <div className="
+                    {spots.map((spot) => (
+                        <div
+                        key={spot.id} 
+                        className="
                             hidden
                             lg:block lg:p-4 lg:border lg:relative
                         ">
-                            <img src="https://placehold.co/500x600" alt="" 
+                            <img src={spot.image} alt={spot.heading} 
                                 className="" />
                             <p className="
-                                lg:absolute lg:pl-2 lg:pr-6 lg:text-center lg:bottom-4 lg:left-4">
-                                    Lorem ipsum dolor 
-                                    sit amet consectetur 
-                                    adipisicing elit. 
-                                    Eum placeat sit autem, 
-                                    in molestias corporis 
-                                    commodi nostrum 
-                                    officiis.
+                                lg:absolute lg:pl-2 lg:pr-6 lg:text-center lg:bottom-4 lg:left-4">{spot.content}
                             </p>
                         </div>
-                    {/*Box2 */}
-                        <div className="
-                            hidden
-                            lg:block lg:p-4 lg:border lg:relative
-                        ">
-                            <img src="https://placehold.co/500x600" alt="" className="" />
-                            <p className="lg:absolute lg:pl-2 lg:pr-6 lg:text-center lg:bottom-4 lg:left-4">
-                            Lorem ipsum dolor 
-                                sit amet consectetur 
-                                adipisicing elit. 
-                                Eum placeat sit autem, 
-                                in molestias corporis 
-                                commodi nostrum 
-                                officiis.
-                            </p>
-                        </div>
-                    {/*Box3 */}
-                        <div className="
-                            hidden
-                            lg:block lg:p-4 lg:border lg:relative
-                        ">
-                            <img src="https://placehold.co/500x600" alt="" className="" />
-                            <p className="lg:absolute lg:pl-2 lg:pr-6 lg:text-center lg:bottom-4 lg:left-4">
-                            Lorem ipsum dolor 
-                                sit amet consectetur 
-                                adipisicing elit. 
-                                Eum placeat sit autem, 
-                                in molestias corporis 
-                                commodi nostrum 
-                                officiis.
-                            </p>
-                        </div>
+                        ))}
                     </article>
     )
 }

@@ -1,8 +1,41 @@
 import {Link } from 'react-router';
+import {useState, useEffect} from 'react';
 import Hero from '../../assets/Components/Hero/Hero';
 import InfoSpots from "../../assets/Components/Spots/Spots.jsx";
 
-function Home({products}){
+function Home(){
+    const[favorit, setfavorit] = useState([]);
+    const [products, setproducts]=useState([]);
+        
+    useEffect(()=>{
+            fetch("http://localhost:8000/api/products")
+            .then(res=>res.json())
+            .then(products=>{
+                setproducts(products)
+    
+    })
+    .catch(error=>console.error("Problem vid fetching av produkter i Homepage:", error));
+  },[]);
+
+    function isNew(publishDate){
+        const today = new Date();
+        const published = new Date(publishDate);
+        const diffrensInTime = today - published;
+        const days = diffrensInTime /(1000 * 60 * 60* 24);
+            return days <= 7;
+    }
+    
+
+    
+    const toggleFavorit = (id) => {
+        if(favorit.includes(id)){
+            setfavorit(favorit.filter(favid => favid !== id));
+        }else{
+            setfavorit([...favorit, id])
+        }
+    };
+
+
     return(
         <>
         <Hero />
@@ -14,21 +47,30 @@ function Home({products}){
                 className="my-10 sm:my-5">
                     <div className="">
                         <div className="relative p-6 lg:p-2">
-                            <Link to="">
+                            {isNew(product.publishDate) && (
+                                <div 
+                                className='absolute top-9 left-9 bg-blue-200 py-3 px-3 rounded text-xl
+                                lg:top-5 lg:left'>Nyhet</div>
+                            )}
+                            <Link to={`/products/${product.id}/${product.slug}`}>
                                 <img src={product.image} alt={product.productName} className="w-full object-cover" />
                             </Link>
-                            <svg 
-                            className="absolute bottom-10 right-10 cursor-pointer lg:bottom-5 lg:right-5"
-                            width="44"
-                            height="44"
-                            viewBox='0 0 24 24'
-                            
-                            style={{
-                                stroke: "black",
-                                strokeWidth: "2",
-                            }}>
-                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                            </svg>
+                            <button className='absolute bottom-10 right-10 lg:bottom-5 lg:right-5'>
+                                <svg 
+                                    className="cursor-pointer"
+                                    width="44"
+                                    height="44"
+                                    viewBox='0 0 24 24'
+                                    onClick={()=>toggleFavorit(product.id)}
+                                    
+                                    style={{
+                                        fill: favorit.includes(product.id) ? "red" : "none",
+                                        stroke: "black",
+                                        strokeWidth: "2",
+                                    }}>
+                                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                </svg>
+                            </button>
                         </div>
                         <div className="
                             flex justify-between flex-wrap px-10

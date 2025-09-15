@@ -2,6 +2,7 @@ import { NavLink } from 'react-router';
 import tunna from '../../assets/Img/delete-icon.png';
 import { useState } from 'react';
 import { useEffect } from 'react';
+
 function CategoriPage(){
 
    const [categories, setcategories]=useState([]);
@@ -30,6 +31,10 @@ function CategoriPage(){
 
     useEffect(()=>{
         categoriesFetch();
+    },[]);
+    
+    useEffect(()=>{
+        document.title = 'Administration'
     },[]);
    
    const handleDelite= async(id) =>{

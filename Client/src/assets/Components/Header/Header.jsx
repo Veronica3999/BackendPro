@@ -6,9 +6,15 @@ import cart from "../../Img/shopping-cart.svg";
 import heart from "../../Img/heart.svg";
 import login from "../../Img/loggin.svg";
 import searchglas from "../../Img/search.svg"
+import { useEffect } from "react";
 
 function Header(){
+
+   useEffect(()=>{
+    document.title = 'Freaky Fashion';
+   },[]);
     
+
     const navigate=useNavigate();
 
     const inputValueOfSearch = ()=>{

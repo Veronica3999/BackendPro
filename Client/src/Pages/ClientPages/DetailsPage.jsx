@@ -1,22 +1,65 @@
+import { useEffect, useState } from "react";
 import {Link} from "react-router";
- import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useParams } from "react-router";
+import { ChevronLeft } from "lucide-react"; //till pilarna i similar
+import { ChevronRight } from "lucide-react";//till pilarna i similar
  
 function Details(){
+  
+    const {id, slug}=useParams();
+
+    const[product, setproduct]=useState([]);
+    const[isError, setisError]=useState("");
+    const[similars, setsimilars]=useState([]);
+      document.title=product.slug;
+    useEffect(() => {
+        const getDetailsFetch = async () =>{
+            try{
+                const res = await fetch(`http://localhost:8000/api/products/${id}/${slug}`);
+                const data = await res.json();
+
+                if(!res.ok){
+                    setisError(data.error || "Produkten hittades inte.")
+                    return;
+                }
+                setproduct(data.product);
+                setsimilars(data.similars);
+
+            }catch(error){
+                setisError("server breakdown =) soon it will burn up!!")
+            }
+        };
+        getDetailsFetch();
+    },[id]);
+
+    if (isError) return <div>{isError}</div>;
+    if (!product) return <div>Laddar...</div>;
+
+
+
+
+
+
+
+
+
+
+
     return(
 <>        
     <section className="mb-10">
             <article className="my-20 sm:flex sm:flex-row">
                         <div className="relative p-15 sm:w-[49%] sm:p-2 lg:p-2">
                                 <Link to="">
-                                    <img src='https://placehold.co/400x600' alt='product.productName' className="w-full object-cover" />
+                                    <img src={product.image} alt={product.productName} className="w-full object-cover" />
                                 </Link>
                                 <svg 
                                 className="absolute bottom-18 right-18 cursor-pointer
                                     sm:bottom-6 sm:right-6"
                                 width="44"
                                 height="44"
-                                viewBox='0 0 24 24'
-                                
+                                viewBox="0 0 24 24"
+                
                                 style={{
                                     stroke: "black",
                                     strokeWidth: "2",
@@ -30,21 +73,13 @@ function Details(){
                                     <h3 className="
                                         text-2xl inline-block
                                         sm:text-xl
-                                        ">Svart t-shirt</h3>
-                                        <span className="block mt-3 lg:px-4">Levis</span>
+                                        ">{product.productName}</h3>
+                                        <span className="block mt-3 lg:px-4">{product.brand}</span>
                             <p className="
                                     block mt-10
-                                    sm:mt-5">Lorem ipsum dolor, 
-                                sit amet consectetur 
-                                adipisicing elit. 
-                                Vero quas explicabo aliquid 
-                                reiciendis. Laborum, expedita 
-                                suscipit? Suscipit sapiente 
-                                praesentium eius, facere ad quos 
-                                possimus, aspernatur provident 
-                                impedit consequatur, tempora cumque.
+                                    sm:mt-5">{product.description}
                             </p>
-                            <span className="text-xl block mt-10 sm:mt-5">299 SEK</span>
+                            <span className="text-xl block mt-10 sm:mt-5">{product.price} SEK</span>
                             <button className="bg-blue-100 mt-10 p-4 w-[400px] rounded-2xl text-xl
                                 sm:w-[200px] sm:mt-5">Lägg i varukorg</button>
                         </div>
@@ -62,10 +97,13 @@ function Details(){
             <button className="absolute top-1/2 right-0 -translate-y-1/2 rounded-full hover:bg-blue-100"><ChevronRight className="w-8 h-8" /></button>
         
             <div className="flex flex-row overflow-x-auto gap-2 hide-slide">
-                 <article className="sm:min-w-[33%] lg:min-w-[33%] xl:min-w-[33%]">
+                {similars.map((similar) => (                 
+                    <article
+                    key={similar.id} 
+                    className="sm:min-w-[33%] lg:min-w-[33%] xl:min-w-[33%]">
                         <div className=" p-1">
-                            <Link to="">
-                                <img src='https://placehold.co/400x600' alt='product.productName' className="w-full object-cover" 
+                            <Link to={`/products/${similar.id}/${similar.slug}`}>
+                                <img src={similar.image} alt={similar.productName} className="w-full object-cover" 
                                 />
                             </Link>
                         </div>
@@ -74,80 +112,12 @@ function Details(){
                             ">
                                 <h3 className="
                                     text-lg inline-block pl-1
-                                    ">Svart t-shirt</h3>
-                                <span className="text-lg pr-3">299 SEK</span>
+                                    ">{similar.productName}</h3>
+                                <span className="text-lg pr-3">{similar.price} SEK</span>
                         </div>
-                        <span className="block px-2 mt-3">Levis</span>
+                        <span className="block px-2 mt-3">{similar.brand}</span>
                 </article>
-
-                <article className="sm:min-w-[33%] lg:min-w-[33%] xl:min-w-[33%]">
-                        <div className=" p-1">
-                            <Link to="">
-                                <img src='https://placehold.co/400x600' alt='product.productName' className="w-full object-cover" 
-                                />
-                            </Link>
-                        </div>
-                        <div className="
-                            flex justify-between p-1
-                            ">
-                                <h3 className="
-                                    text-lg inline-block
-                                    ">Svart t-shirt</h3>
-                                <span className="text-lg pr-3">299 SEK</span>
-                        </div>
-                        <span className="block px-2 mt-3">Levis</span>
-                </article>
-                <article className="sm:min-w-[33%] lg:min-w-[33%] xl:min-w-[33%]">
-                        <div className=" p-1">
-                            <Link to="">
-                                <img src='https://placehold.co/400x600' alt='product.productName' className="w-full object-cover" 
-                                />
-                            </Link>
-                        </div>
-                        <div className="
-                            flex justify-between p-1
-                            ">
-                                <h3 className="
-                                    text-lg inline-block
-                                    ">Svart t-shirt</h3>
-                                <span className="text-lg pr-3">299 SEK</span>
-                        </div>
-                        <span className="block px-2 mt-3">Levis</span>
-                </article>
-                <article className="sm:min-w-[33%] lg:min-w-[33%] xl:min-w-[33%]">
-                        <div className=" p-1">
-                            <Link to="">
-                                <img src='https://placehold.co/400x600' alt='product.productName' className="w-full object-cover" 
-                                />
-                            </Link>
-                        </div>
-                        <div className="
-                            flex justify-between p-1
-                            ">
-                                <h3 className="
-                                    text-lg inline-block
-                                    ">Svart t-shirt</h3>
-                                <span className="text-lg pr-3">299 SEK</span>
-                        </div>
-                        <span className="block px-2 mt-3">Levis</span>
-                </article>
-                <article className="sm:min-w-[33%] lg:min-w-[33%] xl:min-w-[33%]">
-                        <div className=" p-1">
-                            <Link to="">
-                                <img src='https://placehold.co/400x600' alt='product.productName' className="w-full object-cover" 
-                                />
-                            </Link>
-                        </div>
-                        <div className="
-                            flex justify-between p-1
-                            ">
-                                <h3 className="
-                                    text-lg inline-block
-                                    ">Svart t-shirt</h3>
-                                <span className="text-lg pr-3">299 SEK</span>
-                        </div>
-                        <span className="block px-2 mt-3">Levis</span>
-                </article>
+                ))}
 
             </div>
             

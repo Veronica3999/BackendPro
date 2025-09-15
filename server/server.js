@@ -8,6 +8,7 @@ const multer = require('multer');
 const path = require('path');
 
 
+
 //var cookieParser = require('cookie-parser');
 
 const port = 8000;
@@ -24,12 +25,44 @@ app.use(cors({
 app.use(bodyparser.json());
 
 //app.use('/api', require('./routes/index'));
-//gör så att vi kan nå våra uppladdade filer via /images
-app.use('/images', express.static(path.join(__dirname, 'public/images/categories')));
+//gör så att vi kan nå våra uppladdade filer via /images/...
+app.use('/images/categories', express.static(path.join(__dirname, 'public/images/categories')));
+app.use('/images/products', express.static(path.join(__dirname, 'public/images/products')));
 
 
 //Multer inställningar
-const storage = multer.diskStorage({
+const storageProducts = multer.diskStorage({
+  destination: function (req, file, cb) { 
+    cb(null, 'public/images/products') //mapp där filerna hamnar
+  },
+  filename: function (req, file, cb) {
+    const uniqueImageName = Date.now() +"-"+ file.originalname;
+    cb(null, uniqueImageName);
+  }
+});
+  const productsfileFilter = (req,file,cb) =>{
+    if(
+      file.mimetype === "image/png" || 
+      file.mimetype === "image/jpeg" || 
+      file.mimetype === "image/webp" || 
+      file.mimetype === "image/gif" || 
+      file.mimetype === "image/svg+xml")
+      {
+        cb(null, true);
+      }
+      else{
+        cb(new Error("Endast tillåtna filtyper"),false);
+      }
+    };
+const productImageupload = multer({
+  storage: storageProducts, 
+  fileFilter: productsfileFilter,
+  limits:{fileSize: 10 * 1024 * 1024},
+});
+
+///
+  
+const categorystorage = multer.diskStorage({
   destination: function (req, file, cb) { 
     cb(null, 'public/images/categories') //mapp där filerna hamnar
   },
@@ -38,7 +71,7 @@ const storage = multer.diskStorage({
     cb(null, uniqueImageName);
   }
 });
-  const fileFilter = (req,file,cb) =>{
+  const categoryfileFilter = (req,file,cb) =>{
     if(
       file.mimetype === "image/png" || 
       file.mimetype === "image/jpeg" || 
@@ -53,18 +86,24 @@ const storage = multer.diskStorage({
       }
     };
 const upload = multer({
-  storage, 
-  fileFilter,
-  limits:{fileSize: 5 * 1024 * 1024},
+  storage: categorystorage, 
+  fileFilter: categoryfileFilter,
+  limits:{fileSize: 10 * 1024 * 1024},
 });
-  
-
 
 
 
 ///////////////////////////////////////////////////////////
+//spotsinfo
+app.get('/api/spots', (req,res) =>{
+  const spots=db.prepare(`
+    SELECT * FROM Spots;
+    `).all();
+    res.json(spots);
+});
 
-//hämtar produkterna
+
+//hämtar produkterna startsidan
 app.get('/api/products', function(req, res){ 
   
   const select = db.prepare(`
@@ -81,10 +120,115 @@ app.get('/api/products', function(req, res){
       created_at,
       slug
       FROM Products
+      WHERE date(publishDate) <= date('now')
+      ORDER BY random()
+      LIMIT 8;
     `).all();
     res.json(select);
-    console.log(select);
+
 });
+
+//GET producter baserat på kategori namn
+app.get('/api/products/category/:categoryName', (req, res) => {
+  try{
+    const  {categoryName} =req.params;
+console.log("Route param:",categoryName);
+
+    const getCategoryName=db.prepare(`
+          SELECT 
+              Products.id,
+              Products.productName,
+              Products.description,
+              Products.image,
+              Products.brand,
+              Products.sku,
+              Products.price,
+              Products.publishDate,
+              Products.slug,
+              Categories.categoryID,
+              Categories.categoryName
+          FROM Products
+          JOIN Categories ON Categories.categoryID = Products.categoryId
+          WHERE LOWER(Categories.categoryName) = LOWER (?)
+          AND date(Products.publishDate) <=('now')
+      `);
+    const products = getCategoryName.all(categoryName);
+    console.log("SQL result:",products);
+
+       if (products.length === 0) {
+          return res.status(404).json({ error: "Inga produkter hittades i DB" });
+        }   
+      res.json(products);
+      
+  }  
+  catch(error){
+    return res.status(404).json({error:"Fel i hämtningen"});
+  }
+});
+
+
+//hämtar produkterna på detaljsidan
+app.get('/api/products/:id/:slug', function(req, res){ 
+    try{
+      const {id} = req.params;
+
+      const select = db.prepare(`
+          SELECT 
+            id,
+            productName,
+            description,
+            image,
+            brand,
+            sku,
+            price,
+            categoryId,
+            publishDate,
+            created_at,
+            slug
+
+            FROM Products
+            WHERE id = ?
+          `)
+          const product = select.get(id);
+          
+          if(!product){
+            return res.status(404).json({error: "Produkten hittades inte tyvärr"})
+          }
+
+          const similarproducts = db.prepare(`
+              SELECT 
+            id,
+            productName,
+            description,
+            image,
+            brand,
+            sku,
+            price,
+            categoryId,
+            publishDate,
+            created_at,
+            slug
+
+            FROM Products
+            WHERE categoryId = ? AND id !=?
+            ORDER BY random()
+            LIMIT 6 
+            `);
+            const similar = similarproducts.all(product.categoryId, product.id);
+
+          res.json({
+              product,
+              similars: similar,
+              });
+
+
+        }catch(error){
+console.error("fel i hämtning")
+          res.status(500).json({error: "serverfel och den kommer snart att elimineras"})
+        }
+});
+  
+  
 
 app.delete('/api/products/delete/:id', function(req,res){
   try{
@@ -106,14 +250,14 @@ app.delete('/api/products/delete/:id', function(req,res){
         }
 });
 
-app.post('/api/products/new', upload.single('image'), function(req, res){
+app.post('/api/products/new', productImageupload.single('image'), function(req, res){
   try{
     const { productName, description, brand, sku, slug } = req.body;
     let {publishDate} = req.body;
       let {price = 0} = req.body;
         let {categoryid} = req.body;
         let parsedCategory = Number(categoryid);
-          const productImage = req.file ? `image/${req.file.filename}` : null;
+          const productImage = req.file ? `http://localhost:8000/images/products/${req.file.filename}` : null;
 
       if(!productName){
           return res.status(400).json({error: "Namn på produkten saknas"});
@@ -194,14 +338,57 @@ app.post('/api/products/new', upload.single('image'), function(req, res){
 
 
 
-//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////
 
-//category middlwear
+//----category middlwear
+
+
+
+//GET alla produkter som är nya
+app.get('/api/products/latest', (req, res) =>{
+   try{ 
+      const getNewProducts = db.prepare(`
+          SELECT 
+            id,
+            productName,
+            description,
+            image,
+            brand,
+            sku,
+            price,
+            publishDate,
+            categoryId,
+            slug
+          from Products
+          WHERE date(publishDate) >= date('now', '-7 days')
+          AND date(Products.publishDate) <= date('now')
+          ORDER BY publishDate DESC 
+        `)
+      const products = getNewProducts.all();
+          if(products.length === 0){
+            return res.status(404).json({error: "Inga nya produkter hittades"})
+          }
+        res.json(products);
+
+    }
+     catch(error){
+        return res.status(500).json({error:"Fel i hämtningen"});
+     }
+});
+
+
+
+
+
+
+
+
+
 
 app.post('/api/new/categories', upload.single('categoryImage'), (req,res)=>{
   try{
     const { categoryName }=req.body;
-    const  categoryImage = req.file ? `/images/${req.file.filename}` : null;
+    const  categoryImage = req.file ? `http://localhost:8000/images/categories/${req.file.filename}` : null;
 
     if (!categoryName) {
       return res.status(400).json({ error: "Kategorinamn krävs" });
@@ -209,7 +396,7 @@ app.post('/api/new/categories', upload.single('categoryImage'), (req,res)=>{
 
     const category = categoryName.toLowerCase();
 
-    //hämtar alla kategorier, återanvända på lista kategorier
+    //hämtar alla kategorier
     const checkNames= db.prepare(`
       SELECT * FROM Categories 
       WHERE LOWER(categoryName) = ?
@@ -243,12 +430,13 @@ app.get('/api/categories',(req,res)=>{
 try{
   const categoryList= db.prepare(`
       
-    SELECT * FROM Categories 
+    SELECT categoryID, categoryName FROM Categories 
       `).all();
       
     res.json(categoryList);
   }
   catch(error){
+    console.error("Navigering och kategorilistan: kategorierna kunde inte hämtas:", error)
     res.status(500).json({error: "Något gick fel på server sidan!"})
   }
 });
@@ -268,6 +456,8 @@ app.delete('/api/delete/categories/:id',(req,res)=>{
     res.status(500).json({error:"servern svarar inte"});
   }
 });
+
+
   
 
 app.listen(port, ()=>{

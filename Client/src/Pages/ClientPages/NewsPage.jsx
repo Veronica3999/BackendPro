@@ -1,21 +1,51 @@
 import GridCardSection from "../../assets/Components/GridCardSection/GridCardSection";
 
+import{ useState, useEffect } from 'react';
+import { useParams } from 'react-router';
 function News(){
 
-     const products = [
-        { id: 1, name: "Svart t-shirt", price: 299, brand: "Levis", image: "https://placehold.co/400x600" },
-        { id: 2, name: "Nyheter", price: 599, brand: "Nike", image: "https://placehold.co/400x600" },
-        { id: 3, name: "Jeansjacka", price: 799, brand: "Wrangler", image: "https://placehold.co/400x600" },
-        { id: 4, name: "Sneakers", price: 999, brand: "Adidas", image: "https://placehold.co/400x600" },
-        { id: 4, name: "Röd T-shirt", price: 999, brand: "Nike", image: "https://placehold.co/400x600" },
-        { id: 4, name: "Orange T-shirt", price: 999, brand: "Adidas", image: "https://placehold.co/400x600" },
-  ];
+     const [NewProducts, setNewproducts]=useState([]);
+    const [isError, setisError]=useState("");
+
+    const{categoryName}= useParams();
+    console.log(categoryName);
+  useEffect(() =>{
+        const NewProductsFetch = async () => {
+            try {
+                const res = await fetch(`http://localhost:8000/api/products/latest`);
+                const data = await res.json();    
+                    if(!res.ok){
+                        setisError(data.error || "Hämtningen gick fel");
+                        setNewproducts([]);
+                        return;
+                    }
+               
+                    setNewproducts(data);
+                    setisError("");
+            } catch (error) {
+            console.error("NewsPage: fel vid hämtning av kategorier:", error);
+            setisError("Kunde inte hämta produkterna");
+            }
+        };
+        NewProductsFetch();
+    }, [categoryName]);
+
+
+    
+    const title = categoryName;
 
     return(
-       <GridCardSection 
-            title="Nyheter" 
-            products={products} 
+        <>
+          {isError ? (
+                 <div className="text-center text-red-600 mt-10 text-xl">{isError}</div>
+                
+            ) : (
+            <GridCardSection 
+                title={title} 
+                products={NewProducts} 
         />
+         )}
+         </>
     )
 }
 export default News;
