@@ -332,7 +332,67 @@ app.post('/api/products/new', productImageupload.single('image'), function(req, 
       }
 });
 
+app.get('/api/products/search', (req, res) => {
+  try{
+    const{q} = req.query;
+      if(!q){
+        return res.status(400),json({error: "Inget sökord skickasdes"});
+      }
+      if(q.toLowerCase() === "nyheter"){
+        const latestProducts =db.prepare(`
+            SELECT 
+                id,
+                productName,
+                description,
+                image,
+                brand,
+                sku,
+                price,
+                publishDate,
+                created_at,
+                categoryId,
+                slug
+            FROM Products
+            WHERE date(publishDate) >= date('now', '-7 days')
+            AND date(publishDate) <= date('now')
+            ORDER BY publishDate DESC
+        `).all();
+        return res.json(latestProducts);
+      }
 
+      const searchProducts = db.prepare(`
+        SELECT 
+            Products.id,
+            Products.productName,
+            Products.description,
+            Products.image,
+            Products.brand,
+            Products.sku,
+            Products.price,
+            Products.publishDate,
+            Products.created_at,
+            Products.categoryId,
+            Products.slug,
+            Categories.categoryName
+        FROM Products
+        JOIN Categories ON Categories.categoryID = Products.categoryId
+          WHERE LOWER(Products.productName) LIKE LOWER(?)
+          OR LOWER(Products.brand) LIKE LOWER(?)
+          OR LOWER(Categories.categoryName) LIKE LOWER(?)
+        
+        `);
+      const result = searchProducts.all(`%${q}%`, `%${q}%` , `%${q}%`);
+        if(result.length === 0){
+          return res.status(404).json({error: "Inga produkter hittades"});
+        }
+        
+      res.json(result);  
+      }
+  catch(error){
+      console.error("Fel i sökningen", error)
+      res.status(500).json({error: "sökapi: serverfel"})
+    }
+  });
 
 
 
