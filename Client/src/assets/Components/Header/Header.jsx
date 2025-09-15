@@ -1,28 +1,36 @@
 import { Link, NavLink, useNavigate } from "react-router";
-
+import { useEffect, useState } from "react";
 
 import logo from "../../Img/logo3.png";
 import cart from "../../Img/shopping-cart.svg";
 import heart from "../../Img/heart.svg";
 import login from "../../Img/loggin.svg";
 import searchglas from "../../Img/search.svg"
-import { useEffect } from "react";
+
 
 function Header(){
+     const navigate=useNavigate();
+
+     const[searchInput, setsearchInput]=useState("");
 
    useEffect(()=>{
     document.title = 'Freaky Fashion';
    },[]);
+
+
+const searchInputValue = (event) => {
+    setsearchInput(event.target.value)
+};
+
     
+const handleInputSearch = (event) => {
+    event.preventDefault();
+        if(searchInput.trim() !==""){
+            navigate(`/search?q=${searchInput}`);
+            setsearchInput("");
+        }
+};
 
-    const navigate=useNavigate();
-
-    const inputValueOfSearch = ()=>{
-        inputValueOfSearch.console.log("value");
-    };
-    const valueOfInputOnSearch = ()=>{
-        valueOfInputOnSearch.console.log("valueinput");
-    };
 
      
     return(
@@ -47,15 +55,18 @@ function Header(){
         <div className="
             flex items-center justify-between gap-3 w-full 
             sm:w-auto sm:flex-1">
-                <form role="search" className="
-                    relative flex-1 max-w-xs 
-                    sm:max-w-[350px]">
-                        <input
-                            type="search"
-                            placeholder="Sök…"
-                            className="
-                                w-full border text-lg rounded-3xl px-3 pr-12 py-2
-                                focus:outline-none focus:ring-2 focus:ring-blue-500
+                <form 
+                    onSubmit={handleInputSearch} 
+                    className="relative flex-1 max-w-xs 
+                        sm:max-w-[350px]">
+                            <input
+                                type="search"
+                                value={searchInput}
+                                onChange={searchInputValue}
+                                placeholder="Sök…"
+                                className="
+                                    w-full border text-lg rounded-3xl px-3 pr-12 py-2
+                                    focus:outline-none focus:ring-2 focus:ring-blue-500
                                 "/>
                             <button
                                 type="submit"
