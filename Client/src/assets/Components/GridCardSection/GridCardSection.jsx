@@ -13,7 +13,7 @@ function GridCardSection({title, products}){
                 <GridCardProducts
                     key={product.id}
                         id={product.id}
-                        name={product.productName}
+                        name={product.name}
                         price={product.price}
                         brand={product.brand}
                         image={product.image}

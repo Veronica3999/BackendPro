@@ -1,11 +1,11 @@
 import { useSearchParams } from "react-router";
 import GridCardSection from "../../assets/Components/GridCardSection/GridCardSection";
-import { useState, useEffect } from "react";
-
+import { useState, useEffect, useContext } from "react";
+import { FavoriteContext } from "../../Context/FavoriteContext";
 function Search(){
     const[productsResult, setproductsResult]=useState([]);
     const[isError, setisError]=useState("");
-
+    const {favorites, addFavorite } = useContext(FavoriteContext);
     const [search]= useSearchParams();
     const getQueryName = search.get("q");
 

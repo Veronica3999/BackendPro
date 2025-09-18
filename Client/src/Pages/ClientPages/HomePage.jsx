@@ -1,12 +1,14 @@
 import {Link } from 'react-router';
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useContext} from 'react';
 import Hero from '../../assets/Components/Hero/Hero';
 import InfoSpots from "../../assets/Components/Spots/Spots.jsx";
+import { FavoriteContext } from '../../Context/FavoriteContext.jsx';
+
 
 function Home(){
-    const[favorit, setfavorit] = useState([]);
     const [products, setproducts]=useState([]);
-        
+    const {favorites, addFavorite } = useContext(FavoriteContext);
+    
     useEffect(()=>{
             fetch("http://localhost:8000/api/products")
             .then(res=>res.json())
@@ -24,16 +26,6 @@ function Home(){
         const days = diffrensInTime /(1000 * 60 * 60* 24);
             return days <= 7;
     }
-    
-
-    
-    const toggleFavorit = (id) => {
-        if(favorit.includes(id)){
-            setfavorit(favorit.filter(favid => favid !== id));
-        }else{
-            setfavorit([...favorit, id])
-        }
-    };
 
 
     return(
@@ -53,7 +45,7 @@ function Home(){
                                 lg:top-5 lg:left'>Nyhet</div>
                             )}
                             <Link to={`/products/${product.id}/${product.slug}`}>
-                                <img src={product.image} alt={product.productName} className="w-full object-cover" />
+                                <img src={product.image} alt={product.name} className="w-full object-cover" />
                             </Link>
                             <button className='absolute bottom-10 right-10 lg:bottom-5 lg:right-5'>
                                 <svg 
@@ -61,10 +53,10 @@ function Home(){
                                     width="44"
                                     height="44"
                                     viewBox='0 0 24 24'
-                                    onClick={()=>toggleFavorit(product.id)}
+                                    onClick={()=>addFavorite(product)}
                                     
                                     style={{
-                                        fill: favorit.includes(product.id) ? "red" : "none",
+                                        fill: favorites.some(fav => fav.id === product.id) ? "red" : "none",
                                         stroke: "black",
                                         strokeWidth: "2",
                                     }}>
@@ -79,7 +71,7 @@ function Home(){
                                 <h3 className="
                                     text-2xl inline-block
                                     sm:text-xl
-                                    ">{product.productName}</h3>
+                                    ">{product.name}</h3>
                                 <span className="text-xl">{product.price} kr</span>
                         </div>
                         <span className="block px-10 mt-3 lg:px-4">{product.brand}</span>

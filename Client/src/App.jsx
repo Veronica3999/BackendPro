@@ -37,11 +37,8 @@ function App() {
     <Routes>
       <Route element={<ClientLayouts />}>
         <Route path='/' element={<HomePage />} />
-    //Ska vara dynamiska, ändra senare
         <Route path='/products/:id/:slug' element={<DetailsPage />} />
-    //Ska vara dynamiska, ändra senare
         <Route path='/categories/:categoryName' element={<CategoriePage />} />
-    //Ska vara dynamiska, ändra senare
         <Route path='/search' element={<SearchPage />} />
         <Route path='/favorites' element={<FavoritPage />} />
         <Route path='/news' element={<NewsPage />} />

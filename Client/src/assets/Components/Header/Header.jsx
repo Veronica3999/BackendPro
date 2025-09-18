@@ -1,16 +1,18 @@
 import { Link, NavLink, useNavigate } from "react-router";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
 import logo from "../../Img/logo3.png";
-import cart from "../../Img/shopping-cart.svg";
+import cartImage from "../../Img/shopping-cart.svg";
 import heart from "../../Img/heart.svg";
 import login from "../../Img/loggin.svg";
 import searchglas from "../../Img/search.svg"
+import { CartContext } from "../../../Context/CartContext";
 
 
 function Header(){
+    const{ cart } = useContext(CartContext);
      const navigate=useNavigate();
-
+console.log(cart);
      const[searchInput, setsearchInput]=useState("");
 
    useEffect(()=>{
@@ -76,15 +78,12 @@ const handleInputSearch = (event) => {
                                 <img src={searchglas} alt="Sök" className="w-6 h-6" />
                             </button>
                 </form>
-    <nav className="
-        flex items-center gap-2 
-        sm:shrink-0
-        ">
+    <nav className="flex items-center gap-2 sm:shrink-0">
             <NavLink
+            className="relavive"
                 to="/basket">
-                    <img src={cart} alt="Varukorg" className="
-                        w-7 h-7
-                        "/>
+                    <img src={cartImage} alt="Varukorg" className="w-7 h-7"/>
+                            <p className=" flex items-center justify-center text-xl bg-red-500 rounded-full h-5 w-5 absolute top-57 right-19 sm:top-26 sm:right-19">{cart.length}</p>
             </NavLink>
             <NavLink
             to="/favorites">

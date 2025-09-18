@@ -1,10 +1,11 @@
 import GridCardSection from "../../assets/Components/GridCardSection/GridCardSection";
+import{ useState, useEffect, useContext } from 'react';
+import { FavoriteContext } from "../../Context/FavoriteContext";
 
-import{ useState, useEffect } from 'react';
 import { useParams } from 'react-router';
 function News(){
-
-     const [NewProducts, setNewproducts]=useState([]);
+    const {favorites, addFavorite } = useContext(FavoriteContext);
+    const [NewProducts, setNewproducts]=useState([]);
     const [isError, setisError]=useState("");
 
     const{categoryName}= useParams();

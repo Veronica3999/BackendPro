@@ -109,7 +109,7 @@ app.get('/api/products', function(req, res){
   const select = db.prepare(`
     SELECT 
        id,
-      productName,
+      name,
       description,
       image,
       brand,
@@ -137,7 +137,7 @@ console.log("Route param:",categoryName);
     const getCategoryName=db.prepare(`
           SELECT 
               Products.id,
-              Products.productName,
+              Products.name,
               Products.description,
               Products.image,
               Products.brand,
@@ -175,7 +175,7 @@ app.get('/api/products/:id/:slug', function(req, res){
       const select = db.prepare(`
           SELECT 
             id,
-            productName,
+            name,
             description,
             image,
             brand,
@@ -198,7 +198,7 @@ app.get('/api/products/:id/:slug', function(req, res){
           const similarproducts = db.prepare(`
               SELECT 
             id,
-            productName,
+            name,
             description,
             image,
             brand,
@@ -252,17 +252,17 @@ app.delete('/api/products/delete/:id', function(req,res){
 
 app.post('/api/products/new', productImageupload.single('image'), function(req, res){
   try{
-    const { productName, description, brand, sku, slug } = req.body;
+    const { name, description, brand, sku, slug } = req.body;
     let {publishDate} = req.body;
       let {price = 0} = req.body;
         let {categoryid} = req.body;
         let parsedCategory = Number(categoryid);
           const productImage = req.file ? `http://localhost:8000/images/products/${req.file.filename}` : null;
 
-      if(!productName){
+      if(!name){
           return res.status(400).json({error: "Namn på produkten saknas"});
       };
-      if(productName.length > 25){
+      if(name.length > 25){
           return res.status(400).json({error: "Produktens namn får max vara 25 tecken"});
       }
       if(!sku){
@@ -296,7 +296,7 @@ app.post('/api/products/new', productImageupload.single('image'), function(req, 
       const insertProduct= db.prepare(`
 
           INSERT INTO Products(
-            productName,
+            name,
             description,
             image,
             brand,
@@ -313,7 +313,7 @@ app.post('/api/products/new', productImageupload.single('image'), function(req, 
         `);
 
         insertProduct.run(
-            productName,
+            name,
             description,
             productImage,
             brand,
@@ -342,7 +342,7 @@ app.get('/api/products/search', (req, res) => {
         const latestProducts =db.prepare(`
             SELECT 
                 id,
-                productName,
+                name,
                 description,
                 image,
                 brand,
@@ -363,7 +363,7 @@ app.get('/api/products/search', (req, res) => {
       const searchProducts = db.prepare(`
         SELECT 
             Products.id,
-            Products.productName,
+            Products.name,
             Products.description,
             Products.image,
             Products.brand,
@@ -376,7 +376,7 @@ app.get('/api/products/search', (req, res) => {
             Categories.categoryName
         FROM Products
         JOIN Categories ON Categories.categoryID = Products.categoryId
-          WHERE LOWER(Products.productName) LIKE LOWER(?)
+          WHERE LOWER(Products.name) LIKE LOWER(?)
           OR LOWER(Products.brand) LIKE LOWER(?)
           OR LOWER(Categories.categoryName) LIKE LOWER(?)
         
@@ -410,7 +410,7 @@ app.get('/api/products/latest', (req, res) =>{
       const getNewProducts = db.prepare(`
           SELECT 
             id,
-            productName,
+            name,
             description,
             image,
             brand,
@@ -524,6 +524,100 @@ app.get('/api/hero',(req,res)=>{
     res.json(heroInfo);
   
 });
+
+
+
+
+
+////////
+
+app.post('/api/checkout', (req, res) =>{
+  try{
+  let {firstName, lastName, email, street, zip,city, newsLetter} = req.body;
+  firstName=firstName?.trim();
+  lastName=lastName?.trim();
+  street=street?.trim();
+  zip=zip?.trim();
+  city=city?.trim();
+  const {cart} = req.body;
+  console.log("Detta kom in från checkout", cart);
+    if(!firstName){
+      return res.status(400).json({error: "Förnamn saknas"});
+    };
+    if(!lastName){
+      return res.status(400).json({error: "Efternamn saknas"});
+    };
+    if(!street){
+      return res.status(400).json({error: "Gatunamn saknas"});
+    };
+    const Zip=Number(zip);
+    if(!Zip || isNaN(Zip)){
+        return res.status(400).json({error: "postnummer får bara bestå av siffror"});
+      };
+    if(!city){
+      return res.status(400).json({error: "stad saknas"});
+    };
+
+  const newsLetterValue = newsLetter ? 1 : 0;
+  
+
+  const insertUser = db.prepare(`
+    INSERT INTO Users(
+        firstName,
+        lastName,
+        email,
+        street,
+        zip,
+        city,
+        NewsLetter,
+        created_at,
+        password
+        )
+        VALUES(LOWER(?),LOWER(?),?,LOWER(?),?,LOWER(?),?,CURRENT_TIMESTAMP,?)
+    `);
+     const userResult = insertUser.run(firstName, lastName, email, street, zip, city, newsLetterValue, "");
+const userID = userResult.lastInsertRowid
+
+const totalPrice = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+     const insertOrder = db.prepare(`
+      INSERT INTO Orders(
+        userID, 
+        created_at,   
+        totalPrice
+        )
+        VALUES(?, CURRENT_TIMESTAMP, ?)
+      `);
+      const orderResult = insertOrder.run(userID, totalPrice);
+      
+      const orderID = orderResult.lastInsertRowid;
+      
+     const insertCartItems = db.prepare(`
+      INSERT INTO OrderItems(
+        productID,
+        name,
+        price,
+        quantity,
+        orderID
+        )
+        VALUES(?,?,?,?,?)
+      `)
+      cart.forEach(item => {
+        insertCartItems.run(item.id, item.name, item.price, item.qty, orderID)  
+      });
+      
+  res.json({message: "Ordern mottagen"});
+  }
+  catch(error){
+    console.error(error);
+    res.status(500).json({error:"Något gick fel i checkout"})
+  }
+});
+
+
+
+
+
+
 
 app.listen(port, ()=>{
 console.log(`API started on port: ${port}`)

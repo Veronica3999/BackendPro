@@ -1,11 +1,16 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {Link} from "react-router";
 import { useParams } from "react-router";
 import { ChevronLeft } from "lucide-react"; //till pilarna i similar
 import { ChevronRight } from "lucide-react";//till pilarna i similar
- 
+import { CartContext } from "../../Context/CartContext";
+import { FavoriteContext } from "../../Context/FavoriteContext";
+
+
+
 function Details(){
-  
+    const { addToCart } = useContext(CartContext);
+    const {favorites, addFavorite } = useContext(FavoriteContext);
     const {id, slug}=useParams();
 
     const[product, setproduct]=useState([]);
@@ -51,7 +56,7 @@ function Details(){
             <article className="my-20 sm:flex sm:flex-row">
                         <div className="relative p-15 sm:w-[49%] sm:p-2 lg:p-2">
                                 <Link to="">
-                                    <img src={product.image} alt={product.productName} className="w-full object-cover" />
+                                    <img src={product.image} alt={product.name} className="w-full object-cover" />
                                 </Link>
                                 <svg 
                                 className="absolute bottom-18 right-18 cursor-pointer
@@ -59,8 +64,10 @@ function Details(){
                                 width="44"
                                 height="44"
                                 viewBox="0 0 24 24"
+                                 onClick={()=>addFavorite(product)}
                 
                                 style={{
+                                    fill: favorites.some(fav => fav.id === product.id) ? "red" : "none",
                                     stroke: "black",
                                     strokeWidth: "2",
                                 }}>
@@ -73,15 +80,17 @@ function Details(){
                                     <h3 className="
                                         text-2xl inline-block
                                         sm:text-xl
-                                        ">{product.productName}</h3>
+                                        ">{product.name}</h3>
                                         <span className="block mt-3 lg:px-4">{product.brand}</span>
                             <p className="
                                     block mt-10
                                     sm:mt-5">{product.description}
                             </p>
                             <span className="text-xl block mt-10 sm:mt-5">{product.price} SEK</span>
-                            <button className="bg-blue-100 mt-10 p-4 w-[400px] rounded-2xl text-xl
-                                sm:w-[200px] sm:mt-5">Lägg i varukorg</button>
+                            <button
+                            onClick={ ()=> addToCart(product)} 
+                            className="bg-blue-100 mt-10 p-4 w-[400px] rounded-2xl text-xl
+                                sm:w-[200px] sm:mt-5 hover:bg-blue-200 hover:shadow-lg transform  active:scale-95 transition ease-in-out">Lägg i varukorg</button>
                         </div>
             </article>
     </section>
@@ -112,7 +121,7 @@ function Details(){
                             ">
                                 <h3 className="
                                     text-lg inline-block pl-1
-                                    ">{similar.productName}</h3>
+                                    ">{similar.name}</h3>
                                 <span className="text-lg pr-3">{similar.price} SEK</span>
                         </div>
                         <span className="block px-2 mt-3">{similar.brand}</span>

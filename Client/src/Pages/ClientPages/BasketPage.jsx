@@ -1,89 +1,93 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { useNavigate} from 'react-router';
-
 import tunna from '../../assets/Img/delete-icon.png';
+import { CartContext } from "../../Context/CartContext.jsx";
+
 
 function BasketPage(){
     const navigate = useNavigate();
     const [isLargeScreen, setIsLargeScreen]=useState(window.innerWidth >= 640);
-    const [cartItems, setcartItems] = useState([]);
+    
+    const { cart, removeFromCart, updateQty } = useContext(CartContext);
 
-    useEffect(() => {
-        setcartItems([
-            { id: 1, name: "Svart t-shirt", price: 299, brand: "Levis", image: "https://placehold.co/400x600", categori:"Tröja" },
-            { id: 2, name: "Kategori", price: 599, brand: "Nike", image: "https://placehold.co/400x600", categori:"Tröja"},
-            { id: 3, name: "Jeansjacka", price: 799, brand: "Wrangler", image: "https://placehold.co/400x600" ,categori:"Tröja" },
-            { id: 4, name: "Sneakers", price: 999, brand: "Adidas", image: "https://placehold.co/400x600", categori:"Tröja" },
-            { id: 5, name: "Blå T-shirt", price: 999, brand: "Nike", image: "https://placehold.co/400x600", categori:"skor" },
-            { id: 6, name: "Orange T-shirt", price: 999, brand: "Adidas", image: "https://placehold.co/400x600", categori:"skor" },
-        ])
-
-    },[]);
+        useEffect(()=>{
+            document.title = "Varukorg";
+        },[]);
 
         useEffect(()=>{
             const handleResize = ()=>{
                 setIsLargeScreen(window.innerWidth >= 640);
-            };
+        };
 
             window.addEventListener("resize", handleResize);
             return () => window.removeEventListener("resize", handleResize);
         },[]);
 
-const handleQtyChange =(id, qty)=>{
-    setcartItems((prev)=>
-            prev.map((item) =>
-                item.id === id ? {...item, qty: Number(qty) } : item
-        )
-    );
-};
-
+    const toStartSide = () =>{
+        navigate("/");
+    };
     const toCheckout = ()=>{
-        navigate("/checkout", {state: { cart: cartItems} });
+        navigate("/checkout");
     };
 
 
             return(
                 <section className='mt-20'>
-                    <h2 className='text-center text-2xl mb-10'>Varukorgen</h2>
-                {!isLargeScreen ? (
+                    <h2 className='text-center text-3xl mb-10'>Varukorgen</h2>
+                {cart.length === 0 ?(
                     <div>
-                    {cartItems.map((Item) => (
-                    <div className="w-full p-5 border
-                    key={item.id}">
-            
-                        <div className="flex flex-wrap py-2">
-                            <div className="flex-1 text-xl pb-3">{Item.name}</div>
-                            <div className="w-[49%] text-right text-xl pr-7">{(Number(Item.price) * Number(Item.qty) || Number(Item.price)) } kr </div>
-                            <div className="w-[49%] p-1">{Item.price} kr</div>
-                            <div className="w-[49%] text-right flex items-end justify-end">
-                                <select 
-                                    value={Item.qty}
-                                    onChange={(e)=> handleQtyChange(Item.id, e.target.value)}
-                                    className='bg-gray-300 rounded text-xl'>
-                                    <optgroup>
-                                        <option value="1">1</option>
-                                        <option value="2">2</option>
-                                        <option value="3">3</option>
-                                        <option value="4">4</option>
-                                        <option value="5">5</option>
-                                        <option value="6">6</option>
-                                        <option value="7">7</option>
-                                        <option value="8">8</option>
-                                        <option value="9">9</option>
-                                        <option value="10">10</option>
-                                    </optgroup>
-                                </select>
-                            <button className='pl-4 text-end'>
-                                <img src={tunna} alt="Radera" className='w-6 h-6' />
+                        <p className='text-xl w-full text-center'>Du har inget i varukorgen.</p>
+                        <div className='flex justify-center mt-10'>
+                            <button
+                            onClick={toStartSide}
+                                className='text-xl bg-blue-100 p-4 rounded-xl w-[300px] hover:bg-blue-200 hover:shadow-lg transform  active:scale-95 transition ease-in-out'>Fortsätt Shoppa
                             </button>
                         </div>
                     </div>
-                   
-            </div>
+                ) : !isLargeScreen ? (
+                    <div>
+                        {cart.map((Item) => (
+                            <div className="w-full p-5 border
+                                key={Item.id}">
+            
+                                <div className="flex flex-wrap py-2">
+                                        <div className="flex-1 text-xl pb-3">{Item.name}</div>
+                                        <div className="w-[49%] text-right text-xl pr-7">{(Number(Item.price) * Number(Item.qty )) } kr </div>
+                                        <div className="w-[49%] p-1">{Item.price} kr</div>
+                                        <div className="w-[49%] text-right flex items-end justify-end">
+                                    <select 
+                                        value={Item.qty}
+                                        onChange={(e)=> updateQty(Item.id, e.target.value)}
+                                        className='bg-gray-300 rounded text-xl'>
+                                        <optgroup>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                            <option value="6">6</option>
+                                            <option value="7">7</option>
+                                            <option value="8">8</option>
+                                            <option value="9">9</option>
+                                            <option value="10">10</option>
+                                        </optgroup>
+                                    </select>
+                                    <button onClick={() => removeFromCart(Item.id)} className='pl-4 text-end'>
+                                        <img src={tunna} alt="Radera" className='w-6 h-6' />
+                                    </button>
+                                </div>
+                            </div>
+                    </div>
              ))}
+             <div className='flex justify-center mt-5'>
+                <button 
+                    onClick={toCheckout}
+                    className=' text-xl bg-blue-100 p-4 rounded-xl w-[300px] hover:bg-blue-200 hover:shadow-lg transform  active:scale-95 transition ease-in-out'>Till kassan
+                </button>
+            </div>
              </div>
             ) : (
-            <table className='w-full text-xl border'>
+                <>            <table className='w-full text-xl border'>
                 <thead className='bg-gray-400 '>
                     <tr>
                         <th scope='col' className='border'>Produkt</th>
@@ -93,17 +97,17 @@ const handleQtyChange =(id, qty)=>{
                     </tr>
                 </thead>
                 <tbody className='bg-gray-300'>
-                    {cartItems.map((item) =>(
+                    {cart.map((item) =>(
                         <tr 
                             key={item.id} 
                             className='odd-bg-gray-200 even:bg-gray-50 hover:bg-gray-400 cursor-pointer'>
                                 <td className='p-2 border-r'>{item.name}</td>
                                 <td className='p-2 text-end border-r'>{item.price} kr</td>
-                                <td className='p-2 text-end border-r'>{(Number(item.price) * Number(item.qty) || Number(item.price)) } kr</td>
+                                <td className='p-2 text-end border-r'>{item.price * item.qty} kr</td>
                                 <td className='p-2 flex justify-center gap-4'>
                             <select 
                                 value={item.qty}
-                                onChange={(e)=> handleQtyChange(item.id, e.target.value)}
+                                onChange={(e)=> updateQty(item.id, e.target.value)}
                                 className='bg-white rounded text-xl'>
                                 <optgroup>
                                     <option value="1">1</option>
@@ -118,7 +122,7 @@ const handleQtyChange =(id, qty)=>{
                                     <option value="10">10</option>
                                 </optgroup>
                             </select>
-                            <button>
+                            <button onClick={()=> removeFromCart(item.id)}>
                                 <img src={tunna} alt="Radera" className='w-5 h-5' />
                             </button>
                         </td>
@@ -126,13 +130,14 @@ const handleQtyChange =(id, qty)=>{
                     ))}
                 </tbody>
             </table>
-            )}
-            <div className='mt-10 flex justify-center'>
+               <div className='mt-10 flex justify-center'>
                 <button 
                     onClick={toCheckout}
-                    className='text-xl bg-blue-100 p-4 rounded-xl w-[300px]'>Till kassan
+                    className='text-xl bg-blue-100 p-4 rounded-xl w-[300px] hover:bg-blue-200 hover:shadow-lg transform  active:scale-95 transition ease-in-out'>Till kassan
                 </button>
             </div>
+            </>
+            )}
             </section>
             );
         }

@@ -1,0 +1,13 @@
+-- database: ../../../../../server/db/freakyfashion.db
+
+CREATE TABLE Hero(
+ id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+ title TEXT NOT NULL,
+ description TEXT
+);
+INSERT INTO Hero VALUES
+(1,
+"Hero",
+"Lorem ipsum dolor sit amet consectetur adipisicing elit. Laborum mollitia nemo, laboriosam 0accusantium soluta voluptatum odit, laudantium nam molestias et cupiditate praesentium. Tempora soluta id voluptatibus temporibus rerum unde a.");
+
+DROP TABLE Hero;
