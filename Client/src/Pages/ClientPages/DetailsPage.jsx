@@ -10,8 +10,8 @@ import { FavoriteContext } from "../../Context/FavoriteContext";
 
 function Details(){
     const { addToCart } = useContext(CartContext);
-    const {favorites, addFavorite } = useContext(FavoriteContext);
-    const {id, slug}=useParams();
+    const {favorites, addFavorite, removeFavorite } = useContext(FavoriteContext);
+    const {slug}=useParams();
 
     const[product, setproduct]=useState([]);
     const[isError, setisError]=useState("");
@@ -20,7 +20,7 @@ function Details(){
     useEffect(() => {
         const getDetailsFetch = async () =>{
             try{
-                const res = await fetch(`http://localhost:8000/api/products/${id}/${slug}`);
+                const res = await fetch(`http://localhost:8000/api/products/${slug}`);
                 const data = await res.json();
 
                 if(!res.ok){
@@ -35,7 +35,7 @@ function Details(){
             }
         };
         getDetailsFetch();
-    },[id]);
+    },[slug]);
 
     if (isError) return <div>{isError}</div>;
     if (!product) return <div>Laddar...</div>;
@@ -64,7 +64,13 @@ function Details(){
                                 width="44"
                                 height="44"
                                 viewBox="0 0 24 24"
-                                 onClick={()=>addFavorite(product)}
+                                  onClick={()=>{
+                                        if(favorites.some(fav => fav.id === product.id)){
+                                            removeFavorite(product.id)
+                                        }else{
+                                            addFavorite(product)
+                                        }
+                                    }}
                 
                                 style={{
                                     fill: favorites.some(fav => fav.id === product.id) ? "red" : "none",
@@ -107,14 +113,33 @@ function Details(){
         
             <div className="flex flex-row overflow-x-auto gap-2 hide-slide">
                 {similars.map((similar) => (                 
-                    <article
-                    key={similar.id} 
-                    className="sm:min-w-[33%] lg:min-w-[33%] xl:min-w-[33%]">
-                        <div className=" p-1">
-                            <Link to={`/products/${similar.id}/${similar.slug}`}>
+                    <article key={similar.id} className=" sm:min-w-[33%] max-w-[33%] lg:min-w-[33%] xl:min-w-[33%]">
+                        <div className=" p-1 relative">
+                            <Link to={`/products/${similar.slug}`}
+                            state={{id: similar.id}}>
                                 <img src={similar.image} alt={similar.productName} className="w-full object-cover" 
                                 />
                             </Link>
+                            <svg 
+                                className="sm:absolute sm:cursor-pointer sm:bottom-3 sm:right-3"
+                                width="44"
+                                height="44"
+                                viewBox="0 0 24 24"
+                                  onClick={()=>{
+                                        if(favorites.some(fav => fav.id === similar.id)){
+                                            removeFavorite(similar.id)
+                                        }else{
+                                            addFavorite(similar)
+                                        }
+                                    }}
+                
+                                style={{
+                                    fill: favorites.some(fav => fav.id === similar.id) ? "red" : "none",
+                                    stroke: "black",
+                                    strokeWidth: "2",
+                                }}>
+                                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                </svg>
                         </div>
                         <div className="
                             flex justify-between p-1

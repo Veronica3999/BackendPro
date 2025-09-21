@@ -6,8 +6,11 @@ import { FavoriteContext } from '../../Context/FavoriteContext.jsx';
 
 
 function Home(){
+    useEffect(()=>{
+        document.title = "Freaky Fashion";
+    },[]);
     const [products, setproducts]=useState([]);
-    const {favorites, addFavorite } = useContext(FavoriteContext);
+    const {favorites, addFavorite, removeFavorite } = useContext(FavoriteContext);
     
     useEffect(()=>{
             fetch("http://localhost:8000/api/products")
@@ -44,7 +47,8 @@ function Home(){
                                 className='absolute top-9 left-9 bg-blue-200 py-3 px-3 rounded text-xl
                                 lg:top-5 lg:left'>Nyhet</div>
                             )}
-                            <Link to={`/products/${product.id}/${product.slug}`}>
+                            <Link to={`/products/${product.slug}`}
+                            state={{name: product.name}}>
                                 <img src={product.image} alt={product.name} className="w-full object-cover" />
                             </Link>
                             <button className='absolute bottom-10 right-10 lg:bottom-5 lg:right-5'>
@@ -53,8 +57,13 @@ function Home(){
                                     width="44"
                                     height="44"
                                     viewBox='0 0 24 24'
-                                    onClick={()=>addFavorite(product)}
-                                    
+                                    onClick={()=>{
+                                        if(favorites.some(fav => fav.id === product.id)){
+                                            removeFavorite(product.id)
+                                        }else{
+                                            addFavorite(product)
+                                        }
+                                    }}
                                     style={{
                                         fill: favorites.some(fav => fav.id === product.id) ? "red" : "none",
                                         stroke: "black",

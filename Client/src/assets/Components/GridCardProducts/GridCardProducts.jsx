@@ -3,13 +3,13 @@ import { FavoriteContext } from "../../../Context/FavoriteContext";
 import { Link } from "react-router";
 
 function GridCardProducts({ id ,name, price, brand, image, slug}){
-    const {favorites, addFavorite } = useContext(FavoriteContext);
+    const {favorites, addFavorite, removeFavorite } = useContext(FavoriteContext);
     const favoritProduct= {id, name, price, brand, image, slug}
     return(
         <article className="my-10 sm:my-5">
                     <div className="">
                         <div className="relative p-6 lg:p-2">
-                            <Link to={`/products/${id}/${slug}`}>
+                            <Link to={`/products/${slug}`}>
                                 <img 
                                     src={image} 
                                     alt={name} 
@@ -20,7 +20,13 @@ function GridCardProducts({ id ,name, price, brand, image, slug}){
                                 width="44"
                                 height="44"
                                 viewBox='0 0 24 24'
-                                onClick={()=>addFavorite(favoritProduct)}
+                                 onClick={()=>{
+                                        if(favorites.some(fav => fav.id === favoritProduct.id)){
+                                            removeFavorite(favoritProduct.id)
+                                        }else{
+                                            addFavorite(favoritProduct)
+                                        }
+                                    }}
                                 
                                 style={{
                                     fill: favorites.some(fav => fav.id === favoritProduct.id) ? "red" : "none",

@@ -13,7 +13,12 @@ const[textStatus, settextStatus] = useState();
 
 const productsFetch = async () =>{
     try{
-        const res = await fetch("http://localhost:8000/api/products");
+        const token = sessionStorage.getItem("token");
+        const res = await fetch("http://localhost:8000/api/admin/products",{
+            headers:{
+                "Authorization":`Bearer ${token}`
+            },
+        });
         const data = await res.json();
         setproducts(data);
     }
@@ -39,8 +44,13 @@ useEffect(()=>{
 
 const handleDelite = async(id)=>{
     try{
+        const token = sessionStorage.getItem("token");
+
         const res = await fetch(`http://localhost:8000/api/products/delete/${id}`,{
-            method:"DELETE"
+            method:"DELETE",
+            headers:{
+                "Authorization":`Bearer ${token}`
+            },
         });
         const resMsg = await res.json();
             if(!res.ok){
@@ -94,7 +104,7 @@ console.log(id);
                     <tr 
                         className='odd:bg-gray-100 even:bg-blue-50 hover:bg-indigo-200 transition-colors '
                         key={product.id}>
-                            <td className=' border-r px-4 py-2 '>{product.productName}</td>
+                            <td className=' border-r px-4 py-2 '>{product.name}</td>
                             <td className='border-r px-4 py-2 '>{product.sku}</td>
                             <td className='border-r px-4 py-2 '>{product.price}</td>
                             <td>

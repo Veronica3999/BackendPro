@@ -39,8 +39,13 @@ function CategoriPage(){
    
    const handleDelite= async(id) =>{
         try{
+            const token = sessionStorage.getItem("token");
+            
             const res = await fetch (`http://localhost:8000/api/delete/categories/${id}`,{
                 method: "DELETE",
+                headers:{
+                "Authorization":`Bearer ${token}`
+            },
             });
             const resMsg = await res.json();
             if(!res.ok){

@@ -5,10 +5,14 @@
 # SET DEBUG=server:* & npm start
 # npm install nodemon + dev:nodemon
 # npm install better-sqlite3
+# npm install jsonwebtoken --till token
+# npm install dotenv --för att läsa token
 
 #Ignorerar node-modiles
 server/node_modules/
 **/node_modules/
+
+.env
 
 # Logs
 logs

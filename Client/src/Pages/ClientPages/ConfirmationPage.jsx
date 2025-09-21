@@ -1,6 +1,11 @@
-
+import { useEffect } from 'react';
 
 function ConfirmationPage(){
+
+useEffect(()=>{
+    document.title = "Orderbekräftelse" ;
+},[]);
+
     return(
         <div className="my-30">
             <p className="text-center text-3xl mb-4">Tack för din order!</p>

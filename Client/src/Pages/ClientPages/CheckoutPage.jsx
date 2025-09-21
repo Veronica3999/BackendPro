@@ -10,6 +10,7 @@ function CheckoutPage(){
     const [message, setmessage]= useState("");
     const [textStatus, settextStatus]= useState("");
     const totalPrice = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+        
         useEffect(() => {
             document.title ="Kassan";
         },[]);

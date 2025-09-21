@@ -1,22 +1,24 @@
 import GridCardSection from "../../assets/Components/GridCardSection/GridCardSection";
-import{ useState, useEffect, useContext } from 'react';
-import { FavoriteContext } from "../../Context/FavoriteContext";
+import{ useState, useEffect } from 'react';
 
-import { useParams } from 'react-router';
+
+
 function News(){
-    const {favorites, addFavorite } = useContext(FavoriteContext);
+    useEffect(()=>{
+        document.title = "Freaky Fashion";
+    },[]);
+
+
     const [NewProducts, setNewproducts]=useState([]);
     const [isError, setisError]=useState("");
 
-    const{categoryName}= useParams();
-    console.log(categoryName);
   useEffect(() =>{
         const NewProductsFetch = async () => {
             try {
-                const res = await fetch(`http://localhost:8000/api/products/latest`);
+                const res = await fetch(`http://localhost:8000/api/products/latest/new`);
                 const data = await res.json();    
                     if(!res.ok){
-                        setisError(data.error || "Hämtningen gick fel");
+                        setisError("Hämtningen gick fel");
                         setNewproducts([]);
                         return;
                     }
@@ -29,11 +31,11 @@ function News(){
             }
         };
         NewProductsFetch();
-    }, [categoryName]);
+    }, []);
 
 
     
-    const title = categoryName;
+    const title = "Nyheter";
 
     return(
         <>

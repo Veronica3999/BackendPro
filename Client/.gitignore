@@ -3,6 +3,7 @@
 # npm install
 # npm install lucide-react //icon library
 #npm install tailwind-scrollbar-hide //to hide slides
+#npm install jwt-decode //för att av koda tokens-ta ut info från token
 
 #Ignorerar node-modiles
 Client/node_modules/

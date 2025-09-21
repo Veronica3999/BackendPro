@@ -1,15 +1,16 @@
-
+require("dotenv").config();
+const jwt = require("jsonwebtoken");
 const express = require('express');
+const AdminToken = require("./Admintoken");
+const UserToken = require("./Usertoken");
 const Database = require('better-sqlite3');
 const app = express();
 const bodyparser = require('body-parser');
 const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
+const fs = require("fs"); //till images
 
-
-
-//var cookieParser = require('cookie-parser');
 
 const port = 8000;
 
@@ -91,7 +92,18 @@ const upload = multer({
   limits:{fileSize: 10 * 1024 * 1024},
 });
 
-
+  function stopImage(file){
+    if(file){
+      const filePath = path.join(__dirname, "public/images/products", file.filename );
+      fs.unlinkSync(filePath);
+    }
+  }
+  function stopImageCategories(file){
+    if(file){
+      const filePath = path.join(__dirname, "public/images/categories", file.filename );
+      fs.unlinkSync(filePath);
+    }
+  }
 
 ///////////////////////////////////////////////////////////
 //spotsinfo
@@ -100,6 +112,38 @@ app.get('/api/spots', (req,res) =>{
     SELECT * FROM Spots;
     `).all();
     res.json(spots);
+});
+
+//GET alla produkter som är nya
+app.get('/api/products/latest/new', (req, res) =>{
+   try{ 
+      const getNewProducts = db.prepare(`
+          SELECT 
+            id,
+            name,
+            description,
+            image,
+            brand,
+            sku,
+            price,
+            publishDate,
+            categoryId,
+            slug
+          from Products
+          WHERE date(publishDate) >= date('now', '-7 days')
+          AND date(publishDate) <= date('now')
+          ORDER BY publishDate DESC 
+        `)
+      const products = getNewProducts.all();
+          if(products.length === 0){
+            return res.status(404).json({error: "Inga nya produkter hittades"})
+          }
+        res.json(products);
+
+    }
+     catch(error){
+        return res.status(500).json({error:"Fel i hämtningen"});
+     }
 });
 
 
@@ -128,129 +172,33 @@ app.get('/api/products', function(req, res){
 
 });
 
-//GET producter baserat på kategori namn
-app.get('/api/products/category/:categoryName', (req, res) => {
-  try{
-    const  {categoryName} =req.params;
-console.log("Route param:",categoryName);
-
-    const getCategoryName=db.prepare(`
-          SELECT 
-              Products.id,
-              Products.name,
-              Products.description,
-              Products.image,
-              Products.brand,
-              Products.sku,
-              Products.price,
-              Products.publishDate,
-              Products.slug,
-              Categories.categoryID,
-              Categories.categoryName
-          FROM Products
-          JOIN Categories ON Categories.categoryID = Products.categoryId
-          WHERE LOWER(Categories.categoryName) = LOWER (?)
-          AND date(Products.publishDate) <=('now')
-      `);
-    const products = getCategoryName.all(categoryName);
-    console.log("SQL result:",products);
-
-       if (products.length === 0) {
-          return res.status(404).json({ error: "Inga produkter hittades i DB" });
-        }   
-      res.json(products);
-      
-  }  
-  catch(error){
-    return res.status(404).json({error:"Fel i hämtningen"});
-  }
-});
-
-
-//hämtar produkterna på detaljsidan
-app.get('/api/products/:id/:slug', function(req, res){ 
-    try{
-      const {id} = req.params;
-
-      const select = db.prepare(`
-          SELECT 
-            id,
-            name,
-            description,
-            image,
-            brand,
-            sku,
-            price,
-            categoryId,
-            publishDate,
-            created_at,
-            slug
-
-            FROM Products
-            WHERE id = ?
-          `)
-          const product = select.get(id);
-          
-          if(!product){
-            return res.status(404).json({error: "Produkten hittades inte tyvärr"})
-          }
-
-          const similarproducts = db.prepare(`
-              SELECT 
-            id,
-            name,
-            description,
-            image,
-            brand,
-            sku,
-            price,
-            categoryId,
-            publishDate,
-            created_at,
-            slug
-
-            FROM Products
-            WHERE categoryId = ? AND id !=?
-            ORDER BY random()
-            LIMIT 6 
-            `);
-            const similar = similarproducts.all(product.categoryId, product.id);
-
-          res.json({
-              product,
-              similars: similar,
-              });
-
-
-        }catch(error){
-console.error("fel i hämtning")
-          res.status(500).json({error: "serverfel och den kommer snart att elimineras"})
-        }
-});
+//hämtar alla produkter på admin sidan
+app.get('/api/admin/products', AdminToken, function(req, res){ 
   
-  
+  const select = db.prepare(`
+    SELECT 
+       id,
+      name,
+      description,
+      image,
+      brand,
+      sku,
+      price,
+      categoryId,
+      publishDate,
+      created_at,
+      slug
+      FROM Products
+    `).all();
+    res.json(select);
 
-app.delete('/api/products/delete/:id', function(req,res){
-  try{
-    const {id} = req.params;
-    const proid = parseInt(id);  
-      
-
-      const productToDelete = db.prepare(`
-        DELETE FROM Products WHERE id = ?
-        `).run(proid);
-
-          if(productToDelete.changes === 0){
-            return res.status(404).json({error: "Produkten fanns inte"});
-          }
-        res.json({message:"Produkt raderad"});
-        }
-        catch(error){
-            res.status(500).json({error: "Något fel på server sidan"})
-        }
 });
 
-app.post('/api/products/new', productImageupload.single('image'), function(req, res){
+
+
+//lägger in ny produkt från admin
+app.post('/api/products/new',AdminToken, productImageupload.single('image'), (req, res) =>{
+ 
   try{
     const { name, description, brand, sku, slug } = req.body;
     let {publishDate} = req.body;
@@ -260,17 +208,32 @@ app.post('/api/products/new', productImageupload.single('image'), function(req, 
           const productImage = req.file ? `http://localhost:8000/images/products/${req.file.filename}` : null;
 
       if(!name){
+          stopImage(req.file);
           return res.status(400).json({error: "Namn på produkten saknas"});
       };
       if(name.length > 25){
+        stopImage(req.file);
           return res.status(400).json({error: "Produktens namn får max vara 25 tecken"});
       }
       if(!sku){
+        stopImage(req.file);
           return res.status(400).json({error: "Sku saknas eller ej korrekt format, följer formatet XXX111"});
       };
       if(!/^[A-Za-z]{3}[0-9]{3}$/.test(sku)){
+        stopImage(req.file);
           return res.status(400).json({error: "Sku följer formatet XXX111"});
       };
+      if(sku){
+        const skuInDataBase = db.prepare(`
+          SELECT * FROM Products 
+          WHERE sku = ?
+          `).get(sku);
+          
+          if(skuInDataBase){
+            stopImage(req.file);
+            return res.status(409).json({error: "Det SKU nummret finns redan. Försök igen."})
+          }
+      }
       if(!price){
         price = 0;
       }else{
@@ -281,10 +244,12 @@ app.post('/api/products/new', productImageupload.single('image'), function(req, 
         price = parsed;
       }
       if(isNaN(parsedCategory) || parsedCategory == 0){
+        stopImage(req.file);
           return res.status(400).json({error: "Välj en kategori"});
 
       }
       if(!publishDate){
+        stopImage(req.file);
             //.split("T") berättar var delningen ska ske och 
             //skickar tillbaka en array där man väljer vilken
             //del man vill ha. 2000-01-01 T 21:00:00
@@ -327,10 +292,12 @@ app.post('/api/products/new', productImageupload.single('image'), function(req, 
       res.status(201).json({message: "Produkten skapad"})
   }
   catch(error){
-          console.error("Fel i api/product/new", error);
+      console.error("Fel i api/product/new", error);
+        stopImage(req.file);
           res.status(500).json({error: "Något gick fel i servern"});
-      }
-});
+  }});
+
+  //hämtar sökresultat
 
 app.get('/api/products/search', (req, res) => {
   try{
@@ -375,7 +342,7 @@ app.get('/api/products/search', (req, res) => {
             Products.slug,
             Categories.categoryName
         FROM Products
-        JOIN Categories ON Categories.categoryID = Products.categoryId
+        INNER JOIN Categories ON Categories.categoryID = Products.categoryId
           WHERE LOWER(Products.name) LIKE LOWER(?)
           OR LOWER(Products.brand) LIKE LOWER(?)
           OR LOWER(Categories.categoryName) LIKE LOWER(?)
@@ -404,37 +371,6 @@ app.get('/api/products/search', (req, res) => {
 
 
 
-//GET alla produkter som är nya
-app.get('/api/products/latest', (req, res) =>{
-   try{ 
-      const getNewProducts = db.prepare(`
-          SELECT 
-            id,
-            name,
-            description,
-            image,
-            brand,
-            sku,
-            price,
-            publishDate,
-            categoryId,
-            slug
-          from Products
-          WHERE date(publishDate) >= date('now', '-7 days')
-          AND date(Products.publishDate) <= date('now')
-          ORDER BY publishDate DESC 
-        `)
-      const products = getNewProducts.all();
-          if(products.length === 0){
-            return res.status(404).json({error: "Inga nya produkter hittades"})
-          }
-        res.json(products);
-
-    }
-     catch(error){
-        return res.status(500).json({error:"Fel i hämtningen"});
-     }
-});
 
 
 
@@ -442,10 +378,9 @@ app.get('/api/products/latest', (req, res) =>{
 
 
 
+// lägger in kategorier från admin
 
-
-
-app.post('/api/new/categories', upload.single('categoryImage'), (req,res)=>{
+app.post('/api/new/categories', AdminToken, upload.single('categoryImage'), (req,res)=>{
   try{
     const { categoryName }=req.body;
     const  categoryImage = req.file ? `http://localhost:8000/images/categories/${req.file.filename}` : null;
@@ -463,6 +398,7 @@ app.post('/api/new/categories', upload.single('categoryImage'), (req,res)=>{
       `).get(category);
 
       if(checkNames){
+        stopImageCategories(req.file);
         return res.status(409).json({error: "Kategorin finns redan, försök igen."})
       }
       
@@ -486,6 +422,7 @@ app.post('/api/new/categories', upload.single('categoryImage'), (req,res)=>{
  
 });
 
+//hämtar alla kategorier på admin sidan och nav
 app.get('/api/categories',(req,res)=>{
 try{
   const categoryList= db.prepare(`
@@ -501,7 +438,8 @@ try{
   }
 });
 
-app.delete('/api/delete/categories/:id',(req,res)=>{
+//raderar kategorin
+app.delete('/api/delete/categories/:id', AdminToken, (req,res)=>{
   try {
     const{id} = req.params;  
 
@@ -517,6 +455,92 @@ app.delete('/api/delete/categories/:id',(req,res)=>{
   }
 });
 
+
+//hämtar produkterna på detaljsidan
+app.get('/api/products/:slug', function(req, res){ 
+    try{
+      const {slug} = req.params;
+
+      const select = db.prepare(`
+          SELECT 
+            id,
+            name,
+            description,
+            image,
+            brand,
+            sku,
+            price,
+            categoryId,
+            publishDate,
+            created_at,
+            slug
+
+            FROM Products
+            WHERE slug = ?
+          `)
+          const product = select.get(slug);
+          
+          if(!product){
+            return res.status(404).json({error: "Produkten hittades inte tyvärr"})
+          }
+
+          const similarproducts = db.prepare(`
+              SELECT 
+            id,
+            name,
+            description,
+            image,
+            brand,
+            sku,
+            price,
+            categoryId,
+            publishDate,
+            created_at,
+            slug
+
+            FROM Products
+            WHERE categoryId = ? AND id !=?
+            ORDER BY random()
+            LIMIT 6 
+            `);
+            const similar = similarproducts.all(product.categoryId, product.id);
+
+          res.json({
+              product,
+              similars: similar,
+              });
+
+
+        }catch(error){
+console.error("fel i hämtning")
+          res.status(500).json({error: "serverfel och den kommer snart att elimineras"})
+        }
+});
+  
+  
+//Raderar produkter på admin sidan
+
+app.delete('/api/products/delete/:id', AdminToken, (req,res) =>{
+  try{
+    const {id} = req.params;
+    const proid = parseInt(id);  
+      
+
+      const productToDelete = db.prepare(`
+        DELETE FROM Products WHERE id = ?
+        `).run(proid);
+
+          if(productToDelete.changes === 0){
+            return res.status(404).json({error: "Produkten fanns inte"});
+          }
+        res.json({message:"Produkt raderad"});
+        }
+        catch(error){
+            res.status(500).json({error: "Något fel på server sidan"})
+        }
+});
+
+//hämtar hero infon
 app.get('/api/hero',(req,res)=>{
   const heroInfo =db.prepare(`
     SELECT * FROM Hero 
@@ -529,7 +553,7 @@ app.get('/api/hero',(req,res)=>{
 
 
 
-////////
+//lägger in köpta produkter och använaren
 
 app.post('/api/checkout', (req, res) =>{
   try{
@@ -559,25 +583,50 @@ app.post('/api/checkout', (req, res) =>{
     };
 
   const newsLetterValue = newsLetter ? 1 : 0;
-  
+  //kollar om användaren finns redan i db
+    let user = db.prepare(`
+      SELECT * FROM Users
+      WHERE email = ?
+    `).get(email);
 
-  const insertUser = db.prepare(`
-    INSERT INTO Users(
-        firstName,
-        lastName,
-        email,
-        street,
-        zip,
-        city,
-        NewsLetter,
-        created_at,
-        password
-        )
-        VALUES(LOWER(?),LOWER(?),?,LOWER(?),?,LOWER(?),?,CURRENT_TIMESTAMP,?)
+      let userID;
+        if(user){
+          userID = user.id;
+    
+          const upDateUser=db.prepare(`
+              UPDATE Users
+              SET 
+              firstName = LOWER(?),
+              lastName = LOWER(?),
+              street = LOWER(?),
+              Zip = ?,
+              city = LOWER(?),
+              NewsLetter = ?
+              WHERE id = ?
+            `)
+            upDateUser.run(firstName, lastName, street, Zip, city, newsLetterValue, userID);
+        }
+        else{
+          const insertUser = db.prepare(`
+              INSERT INTO Users(
+                firstName,
+                lastName,
+                email,
+                street,
+                zip,
+                city,
+                NewsLetter,
+                created_at,
+                password
+              )
+            VALUES(LOWER(?),LOWER(?),?,LOWER(?),?,LOWER(?),?,CURRENT_TIMESTAMP,?)
     `);
      const userResult = insertUser.run(firstName, lastName, email, street, zip, city, newsLetterValue, "");
-const userID = userResult.lastInsertRowid
+      userID = userResult.lastInsertRowid
 
+}
+
+  
 const totalPrice = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
      const insertOrder = db.prepare(`
       INSERT INTO Orders(
@@ -613,11 +662,165 @@ const totalPrice = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
   }
 });
 
+//lägger in registreringen
+
+app.post('/api/registrer', (req, res) => {
+  const {email, password}= req.body;
+  console.log("Detta kom in från front:",email,password);
+    const userAlreadyInDB = db.prepare(`
+      SELECT * FROM Users
+      WHERE email = ?
+      `).get(email);
+      
+      if(userAlreadyInDB){
+        return res.status(400).json({error: "Användaren finns redan"})
+      }
+
+    const registrer=db.prepare(`
+      INSERT INTO Users(
+          email,
+          password
+        )
+        VALUES(?,?)
+      `);
+      registrer.run(email, password);
+    res.json({message: "Tack för din registrering"})
+});
 
 
 
 
+//kollar om man är inloggad
+app.post('/api/login', (req, res) => {
+  const {email, password} = req.body;
+  
+  const user = db.prepare(`
+    SELECT * FROM Users
+    WHERE email = ?
+    `).get(email);
 
+    if(!user){
+      return res.status(401).json({error: "Du är inte registrerad. Registrera dig här ."})
+    }
+    if(user.password !==password){
+      return res.status(401).json({error:"Fel E-post eller Password"});
+    }
+
+    //Skapa payload med id och role
+    const payload ={id: user.id, role: user.role};
+     
+    //signera token
+    const token = jwt.sign(payload, process.env.JWT_SECRET,{ expiresIn: "1h"});
+
+  res.json({message: "Inloggad", token});
+});
+
+
+
+app.get("/api/favorites", UserToken, (req, res) =>{
+  try{
+    const favorites = db.prepare(`
+      SELECT Products.* FROM FAVORITES
+      INNER JOIN Products ON Favorites.productID = Product.id
+      WHERE Favorites.userID = ?
+      `).all(req.user.id);
+      res.json(favorites);
+  } catch(error){
+    console.error({error:"Det gick inte att hämta några favoriter", error});
+    res.status(500).json({error: "Serverfel"});
+  }
+});
+
+//En inloggad användare som trycker på hjärtan, lägger till i db live
+app.post("/api/favorites/", UserToken, (req, res)=>{
+  const { productID } = req.body;
+  try{
+    const insertFav = db.prepare(`
+      INSERT OR IGNORE INTO Favorites( userID, productID)
+      VALUES(?,?)
+      `);
+      insertFav.run(req.user.id, productID);
+      res.json({message:"Favoriten sparad"});
+  }
+  catch(error){
+    console.error("Fel när favoriten skulle sparas",error)
+    res.status(500),json({error:"Serverfel"})
+  }
+});
+
+//en inloggad användare som tar bort ett hjärta,tar bort från db live
+app.delete("/api/favorites/:productId", UserToken,(req,res)=>{
+  const { productId } = req.params;
+  try {
+    const deleteFav = db.prepare(`
+      DELETE FROM Favorites
+      WHERE userID = ? AND productID =?
+      `);
+      deleteFav.run(req.user.id, productId);
+  
+  } catch (error) {
+    console.error("Fel vid radering", error);
+    res.status(500).json({error: "Serverfel"});
+  }
+});
+
+//en EJ inloggad som sen LOGGAR IN, synkar de sparade favoritern som ligger tillfälligt i sessionstorage
+app.post("/api/favorites/sync", UserToken,(req, res) =>{
+  const { favorites } = req.body;
+    const userID = req.user.id;
+    try{
+      favorites.forEach((fav) =>{
+        const syncFav = db.prepare(`
+          INSERT OR IGNORE INTO Favorites (userID, productID)
+          VALUES (?,?)
+          `)
+          syncFav.run(userID, fav.id);
+      });
+      res.json({message: "Favoriter synkade"})
+    }catch(error){
+      console.error("Fel vid synk", error);
+      res.status(500).json({error: "Serverfel"})
+    }
+
+});
+
+//GET producter baserat på kategori namn
+app.get('/api/products/category/:categoryName', (req, res) => {
+  try{
+    const  {categoryName} =req.params;
+console.log("Route param:",categoryName);
+
+    const getCategoryName=db.prepare(`
+          SELECT 
+              Products.id,
+              Products.name,
+              Products.description,
+              Products.image,
+              Products.brand,
+              Products.sku,
+              Products.price,
+              Products.publishDate,
+              Products.slug,
+              Categories.categoryID,
+              Categories.categoryName
+          FROM Products
+          INNER JOIN Categories ON Categories.categoryID = Products.categoryId
+          WHERE LOWER(Categories.categoryName) = LOWER (?)
+          AND date(Products.publishDate) <=('now')
+      `);
+    const products = getCategoryName.all(categoryName);
+    console.log("SQL result:",products);
+
+       if (products.length === 0) {
+          return res.status(404).json({ error: "Inga produkter hittades i DB" });
+        }   
+      res.json(products);
+      
+  }  
+  catch(error){
+    return res.status(404).json({error:"Fel i hämtningen"});
+  }
+});
 
 app.listen(port, ()=>{
 console.log(`API started on port: ${port}`)

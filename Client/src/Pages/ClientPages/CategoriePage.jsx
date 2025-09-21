@@ -4,6 +4,10 @@ import { useEffect, useState } from 'react';
 import GridCardSection from '../../assets/Components/GridCardSection/GridCardSection';
 
 function Categori(){
+    useEffect(()=>{
+        document.title = "Freaky Fashion";
+    },[]);
+    
     const [productCategories, setproductCategories]=useState([]);
     const [isError, setisError]=useState("");
 

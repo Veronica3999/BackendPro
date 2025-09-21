@@ -10,7 +10,7 @@ const[textStatus, settextStatus]=useState(true);
 
 
 const [formData,setformData]=useState({
-    productName: "",
+    name: "",
     description: "",
     image: null,
     brand: "",
@@ -37,17 +37,17 @@ const handleFileChange = (event) =>{
 const sendProduct = async (event)=>{
             event.preventDefault();
 
-        if(!formData.productName){
+        if(!formData.name){
             setmessage("Namn saknas");
             settextStatus(false);  
             return;         
         }
 
-    const slug = formData.productName.toLowerCase()
+    const slug = formData.name.toLowerCase()
         .replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
 
         const inputData = new FormData();
-                        inputData.append("productName",formData.productName);
+                        inputData.append("name",formData.name);
                         inputData.append("description",formData.description);
                         inputData.append("image",formData.image);
                         inputData.append("brand",formData.brand);
@@ -59,8 +59,13 @@ const sendProduct = async (event)=>{
         
 
         try{
+            const token = sessionStorage.getItem("token");
+            
             const res = await fetch("http://localhost:8000/api/products/new", {
                 method: "POST",
+                headers:{
+                    "Authorization":`Bearer ${token}`
+                },
                 body: inputData,
             });
 
@@ -73,7 +78,7 @@ const sendProduct = async (event)=>{
                 setmessage(msg.message);
                 settextStatus(true);
                 setformData({
-                    productName: "",
+                    name: "",
                     description: "",
                     image: null,
                     brand: "",
@@ -133,12 +138,12 @@ useEffect(() =>{
             className="space y-4 relative"
             encType="multipart/form-data">
                 <div className="grid gap-1">
-                    <label htmlFor="productName" className="text-xl">Namn</label>
+                    <label htmlFor="name" className="text-xl">Namn</label>
                         <input 
-                        id="productName"
+                        id="name"
                         type="text" 
-                        name="productName"
-                        value={formData.productName}
+                        name="name"
+                        value={formData.name}
                         onChange={handleInputChange}
                         placeholder="Namn:"
                         className="border rounded px-3 py-2"
@@ -147,6 +152,7 @@ useEffect(() =>{
                 <div className="grid gap-1">
                     <label htmlFor="productDecription">Beskrivning</label>
                         <input 
+                        id="description"
                         type="text" 
                         name="description"
                         value={formData.description}
@@ -167,6 +173,7 @@ useEffect(() =>{
                 <div className="grid gap-1">
                     <label htmlFor="productBranch">Märke</label>
                         <input 
+                        id="brand"
                         type="text" 
                         name="brand"
                         value={formData.brand}
@@ -178,6 +185,7 @@ useEffect(() =>{
                 <div className="grid gap-1">
                     <label htmlFor="productSku">SKU</label>
                         <input 
+                        id="sku"
                         type="text" 
                         name="sku"
                         value={formData.sku}
@@ -189,6 +197,7 @@ useEffect(() =>{
                 <div className="grid gap-1">
                     <label htmlFor="productPrice">Pris</label>
                         <input 
+                        id="price"
                         type="text" 
                         name="price"
                         value={formData.price}
@@ -200,6 +209,7 @@ useEffect(() =>{
                 <div className="grid gap-1">
                     <label htmlFor="productDate">Publiseringsdatum</label>
                         <input 
+                        id="productDate"
                         type="date" 
                         name="publishDate"
                         value={formData.publishDate}

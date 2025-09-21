@@ -6,15 +6,15 @@ export const CartContext = createContext();
 export function CartProvider({children}){
     const [cart, setcart] =useState([]);
 
-    //läser från localstorage vid start
+    //läser från sessionStorage vid start
     useEffect(() => {
-        const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
+        const storedCart = JSON.parse(sessionStorage.getItem("cart")) || [];
         setcart(storedCart);
     },[]);
 
-        //sparar till localstorage när cart ändras
+        //sparar till sessionStorage när cart ändras
     useEffect(()=>{
-        localStorage.setItem("cart", JSON.stringify(cart));
+        sessionStorage.setItem("cart", JSON.stringify(cart));
     },[cart]);
 
 

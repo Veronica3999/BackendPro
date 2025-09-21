@@ -30,6 +30,7 @@ function NewCategoriPage(){
         };
 
         const sendCategory= async (event)=>{
+
             event.preventDefault();
             
             if(!newCategory.categoryName){
@@ -50,8 +51,13 @@ function NewCategoriPage(){
                     }
 
                     try{
+                        const token = sessionStorage.getItem("token");
+
                         const response = await fetch("http://localhost:8000/api/new/categories",{
                             method: 'POST',
+                            headers:{
+                                "Authorization":`Bearer ${token}`
+                            },
                             body: formData,
                     });
                     const messageToUser = await response.json();

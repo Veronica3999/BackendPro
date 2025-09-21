@@ -29,15 +29,17 @@ import CheckoutPage from './Pages/ClientPages/CheckoutPage.jsx';
 
 
 
+
 function App() {
  
 
   return ( 
     <>
     <Routes>
+
       <Route element={<ClientLayouts />}>
         <Route path='/' element={<HomePage />} />
-        <Route path='/products/:id/:slug' element={<DetailsPage />} />
+        <Route path='/products/:slug' element={<DetailsPage />} />
         <Route path='/categories/:categoryName' element={<CategoriePage />} />
         <Route path='/search' element={<SearchPage />} />
         <Route path='/favorites' element={<FavoritPage />} />
@@ -48,15 +50,17 @@ function App() {
         <Route path='/order/confirmation' element={<ConfirmationPage />} />
         <Route path='/login' element={<LoggInPage />} />
         <Route path='/register' element={<RegisterPage />} />
-  
+
       </Route>
-      
+
       <Route element={<AdminLayouts/>}>
         <Route path ='/admin/products' element={<AdminPage />} />
         <Route path ='/admin/products/new' element={<AdminNewproduct />} />
         <Route path ='/admin/categories' element={<AdminCategoriPage />} />
         <Route path ='/admin/categories/new' element={<AdminNewCategoriPage />} />
+        
       </Route>
+
     </Routes>
     </>
   )
