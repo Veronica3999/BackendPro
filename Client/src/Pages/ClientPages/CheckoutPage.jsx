@@ -5,7 +5,7 @@ import { CartContext } from "../../Context/CartContext";
 
 function CheckoutPage(){
     const navigate = useNavigate();
-    const{ cart, updateQty } = useContext(CartContext);
+    const{ cart, updateQty, clearCart } = useContext(CartContext);
     const [isLargeScreen, setIsLargeScreen]=useState(window.innerWidth >= 640);
     const [message, setmessage]= useState("");
     const [textStatus, settextStatus]= useState("");
@@ -117,7 +117,8 @@ function CheckoutPage(){
                 newsLetter: false,
                     
                 });
-                
+            clearCart([]);
+
         }catch(error){
             setmessage("Något gick fel");
             settextStatus("false");

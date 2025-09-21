@@ -43,8 +43,11 @@ const updateQty = (id, qty) =>{
     );
 };
 
+//töm cart
+const clearCart = () => setcart([]);
+
  return(
-    <CartContext.Provider value ={{cart,addToCart,removeFromCart,updateQty}}>
+    <CartContext.Provider value ={{cart,addToCart,removeFromCart,updateQty, clearCart}}>
         { children}
     </CartContext.Provider>
  );  

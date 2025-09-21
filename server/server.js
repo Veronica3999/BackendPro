@@ -558,14 +558,15 @@ app.get('/api/hero',(req,res)=>{
 app.post('/api/checkout', (req, res) =>{
   try{
   let {firstName, lastName, email, street, zip,city, newsLetter} = req.body;
-  firstName=firstName?.trim();
-  lastName=lastName?.trim();
-  street=street?.trim();
-  zip=zip?.trim();
-  city=city?.trim();
-  const {cart} = req.body;
+      firstName=firstName?.trim();
+      lastName=lastName?.trim();
+      street=street?.trim();
+      zip=zip?.trim();
+      city=city?.trim();
+  
+      const {cart} = req.body;
   console.log("Detta kom in från checkout", cart);
-    if(!firstName){
+     if(!firstName){
       return res.status(400).json({error: "Förnamn saknas"});
     };
     if(!lastName){
@@ -721,7 +722,7 @@ app.get("/api/favorites", UserToken, (req, res) =>{
   try{
     const favorites = db.prepare(`
       SELECT Products.* FROM FAVORITES
-      INNER JOIN Products ON Favorites.productID = Product.id
+      INNER JOIN Products ON Favorites.productID = Products.id
       WHERE Favorites.userID = ?
       `).all(req.user.id);
       res.json(favorites);
@@ -732,7 +733,7 @@ app.get("/api/favorites", UserToken, (req, res) =>{
 });
 
 //En inloggad användare som trycker på hjärtan, lägger till i db live
-app.post("/api/favorites/", UserToken, (req, res)=>{
+app.post("/api/favorites", UserToken, (req, res)=>{
   const { productID } = req.body;
   try{
     const insertFav = db.prepare(`
